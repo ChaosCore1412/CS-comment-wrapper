@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+        <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v22.0&appId=1555242528638492"></script>
+        <link rel="shortcut icon" href="https://raw.githubusercontent.com/ChaosCore1412/CS-comment-wrapper/refs/heads/main/icons/Buh.png" />
+        <title>Fake Manganelo</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            
+            body {
+                height: 100vh;
+                width: 100vw;
+                padding: 0;
+                margin: 0;
+                overflow-x: hidden;
+                background: #1a1a1a;
+            }
+            
+            iframe {
+                height: 100%;
+                width: 100%;
+                border: none;
+            }
+            
+            #comment-container {
+                padding: 20px;
+                background: #fff;
+                border-top: 3px solid #4267B2;
+            }
+            
+            /* Fixed toggle button */
+            #sidebar-toggle {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                background: #4267B2;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                cursor: pointer;
+                box-shadow: 0 2px 15px rgba(0,0,0,0.4);
+                transition: all 0.3s ease;
+                font-size: 1.5rem;
+            }
+            
+            #sidebar-toggle:hover {
+                background: #365899;
+                transform: translateY(-2px) rotate(90deg);
+            }
+            
+            /* Sidebar styling */
+            #sidebar {
+                position: fixed;
+                top: 0;
+                right: -300px;
+                width: 300px;
+                height: 100vh;
+                background: linear-gradient(135deg, #2c3e50, #1a1a1a);
+                box-shadow: 5px 0 25px rgba(0,0,0,0.5);
+                transition: right 0.4s ease;
+                z-index: 999;
+                overflow-y: auto;
+                color: white;
+                padding: 20px 0;
+            }
+            
+            #sidebar.active {
+                right: 0;
+            }
+            
+            #sidebar-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 20px;
+                border-bottom: 1px solid #34495e;
+                margin-bottom: 20px;
+            }
+            
+            #sidebar-header h2 {
+                color: #3498db;
+                font-size: 1.5rem;
+            }
+            
+            #close-sidebar {
+                background: none;
+                border: none;
+                color: #e74c3c;
+                font-size: 24px;
+                cursor: pointer;
+                padding: 5px;
+                transition: transform 0.2s;
+            }
+            
+            #close-sidebar:hover {
+                transform: scale(1.2);
+            }
+            
+            /* Menu buttons styling */
+            .menu-button {
+                display: flex;
+                align-items: center;
+                width: 90%;
+                margin: 15px auto;
+                padding: 15px 20px;
+                background: rgba(44, 62, 80, 0.7);
+                border: none;
+                border-radius: 8px;
+                color: white;
+                font-size: 1.1rem;
+                text-align: left;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            
+            .menu-button:hover {
+                background: rgba(52, 152, 219, 0.3);
+                transform: translateX(10px);
+            }
+            
+            .menu-button i {
+                margin-right: 15px;
+                font-size: 1.5rem;
+                width: 30px;
+                text-align: center;
+            }
+            
+            /* Comment header styling */
+            #comment_header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 20px;
+                background: #fff;
+                border-bottom: 1px solid #dddfe2;
+            }
+            
+            #comment_header span {
+                font-size: 1.5rem;
+                font-weight: bold;
+                color: #4267B2;
+            }
+            
+            #controls-container {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            /* Select styling */
+            #section {
+                padding: 10px 15px;
+                border: 1px solid #dddfe2;
+                border-radius: 8px;
+                background: white;
+                color: #1c1e21;
+                font-size: 1rem;
+                outline: none;
+                transition: all 0.2s;
+                background: #f8f9fa;
+                font-weight: 500;
+            }
+            
+            #section:focus {
+                border-color: #4267B2;
+                box-shadow: 0 0 0 3px rgba(66, 103, 178, 0.2);
+            }
+            
+            /* Refresh button styling */
+            #refresh-comments {
+                background: #4267B2;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 10px 15px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s;
+                font-weight: 600;
+            }
+            
+            #refresh-comments:hover {
+                background: #365899;
+                transform: scale(1.05);
+            }
+            
+            /* Overlay for when sidebar is open */
+            #overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                z-index: 998;
+                display: none;
+            }
+            
+            /* Responsive adjustments */
+            @media (max-width: 768px) {
+                #sidebar {
+                    width: 85%;
+                    right: -85%;
+                }
+                
+                #comment_header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 15px;
+                }
+                
+                #controls-container {
+                    width: 100%;
+                    justify-content: space-between;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                #section {
+                    width: 150px;
+                    padding: 8px 12px;
+                }
+                
+                #refresh-comments span {
+                    display: none;
+                }
+                
+                #refresh-comments {
+                    padding: 10px;
+                }
+            }
+            
+            .sidebar-divider {
+                width: 80%;
+                height: 1px;
+                background: linear-gradient(to right, transparent, #3498db, transparent);
+                margin: 25px auto;
+            }
+        </style>
+    </head>
+    <body>
+        <button id="sidebar-toggle">☰</button>
+        <div id="overlay"></div>
+        <iframe title="Manganelo" src="https://www.nelomanga.net/"></iframe>
+        <div id="fb-root">
+            <div id="comment_header">
+                <span>Facebook Comments</span>
+                <div id="controls-container">
+                    <select id="section">
+                        <option value="http://manganelo.com/comment" selected>Manganelo Original</option>
+                        <option value="https://chaoscore1412.github.io/CS-comment-wrapper/">Fake Manganelo</option>
+                    </select>
+                    <button id="refresh-comments">
+                        <span style="color: white">Refresh</span>
+                    </button>
+                </div>
+            </div>
+            <div id="comment-container">
+                <div class="fb-comments" data-href="http://manganelo.com/comment" data-width="100%" data-numposts="5"></div>
+            </div>
+        </div>
+        
+        <div id="sidebar">
+            <div id="sidebar-header">
+                <h2>Menu</h2>
+                <button id="close-sidebar">✕</button>
+            </div>
+            
+            <button class="menu-button">
+                <i>👤</i> Login
+            </button>    
+            <button class="menu-button">
+                <i>📚</i> Source
+            </button>
+            <button class="menu-button">
+                <i>🌙</i> Dark Mode
+            </button>
+            <div class="sidebar-divider"></div>
+            <button class="menu-button" onclick="window.location.href = 'https://chaoscore1412.github.io/CS-comment-wrapper/policy.html'">
+                <i>❓</i> Privacy Policy
+            </button>
+            
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Toggle sidebar
+                const sidebarToggle = document.getElementById('sidebar-toggle');
+                const sidebar = document.getElementById('sidebar');
+                const closeSidebar = document.getElementById('close-sidebar');
+                const overlay = document.getElementById('overlay');
+                
+                sidebarToggle.addEventListener('click', function() {
+                    if(overlay.style.display == 'block'){
+                        sidebar.classList.remove('active');
+                        overlay.style.display = 'none';
+                    }else{
+                        sidebar.classList.add('active');
+                        overlay.style.display = 'block';
+                    }
+                });
+                
+                closeSidebar.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    overlay.style.display = 'none';
+                });
+                
+                overlay.addEventListener('click', function() {
+                    if(overlay.style.display == 'block'){
+                        sidebar.classList.remove('active');
+                        overlay.style.display = 'none';
+                    }else{
+                        sidebar.classList.add('active');
+                        overlay.style.display = 'block';
+                    }
+                });
+                
+                // Comment section functionality
+                const sectionSelect = document.getElementById('section');
+                const refreshButton = document.getElementById('refresh-comments');
+                let fbComments = document.querySelector('.fb-comments');
+                
+                // Change comment section
+                sectionSelect.addEventListener('change', function() {
+                    fbComments.setAttribute('data-href', this.value);
+                    reloadComments();
+                });
+                
+                // Refresh comments
+                refreshButton.addEventListener('click', reloadComments);
+                
+                // Function to reload comments
+                function reloadComments() {
+                    // Visual feedback for refresh
+                    refreshButton.innerHTML = '<span style="color: white">Refreshing...</span>';
+                    refreshButton.disabled = true;
+                    
+                    // Remove and recreate the comments container
+                    const container = document.getElementById('comment-container');
+                    const newContainer = document.createElement('div');
+                    newContainer.id = 'comment-container';
+                    newContainer.innerHTML = `<div class="fb-comments" data-href="${fbComments.getAttribute('data-href')}" data-width="100%" data-numposts="5"></div>`;
+                    
+                    container.parentNode.replaceChild(newContainer, container);
+                    
+                    // Update reference
+                    fbComments = document.querySelector('.fb-comments');
+                    
+                    // Reinitialize Facebook comments
+                    if (typeof FB !== 'undefined') {
+                        FB.XFBML.parse();
+                    }
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        refreshButton.innerHTML = '<span style="color: white">Refresh</span>';
+                        refreshButton.disabled = false;
+                    }, 1500);
+                }
+            });
+        </script>
+    </body>
+</html>
