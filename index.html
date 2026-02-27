@@ -1,86 +1,860 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta property="fb:app_id" content="1555242528638492"/>
-        <link rel="shortcut icon" href="https://raw.githubusercontent.com/ChaosCore1412/CS-comment-wrapper/refs/heads/main/icons/Buh.png">
-        <title>Fake Manganelo</title>
-        <style>
-            body{
-                height: 100vh;
-                width: 100vw;
-                padding: 0;
-                margin: 0;
-                overflow-x: hidden;
-            }
-            iframe{
-                height: 100%;
-                width: 100%;
-            }
-            #comment-container{
-                padding: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <iframe title="Manganelo" src="https://www.nelomanga.net/"></iframe>
-        <div id="comment-container">
-            <!--
-            <script src="https://giscus.app/client.js"
-                    data-repo="ChaosCore1412/CS-comment-wrapper"
-                    data-repo-id="R_kgDOOd4Pqw"
-                    data-category="General"
-                    data-category-id="DIC_kwDOOd4Pq84C2sCJ"
-                    data-mapping="pathname"
-                    data-strict="0"
-                    data-reactions-enabled="1"
-                    data-emit-metadata="0"
-                    data-input-position="top"
-                    data-theme="preferred_color_scheme"
-                    data-lang="en"
-                    data-loading="lazy"
-                    crossorigin="anonymous"
-                    async>
-            </script>
-            -->
-            <p>Site updated just to let you know :p : <a href='https://disqus.com/embed/comments/?base=default&f=fake-cs&t_i=https%3A%2F%2Fchaoscore1412.github.io%2FCS-comment-wrapper%2F&t_u=https%3A%2F%2Fchaoscore1412.github.io%2FCS-comment-wrapper%2F&t_d=Fake%20Manganelo&t_t=Fake%20Manganelo&s_o=desc#version=971dba38bbe3e7f3ef55979825d44a27'>Click this blue hair, blue tier hidin- </a></p>
-            <p>The second <a href='https://disqus.com/home/discussion/fake-cs/fake_manganelo/newest/' style="color:DarkRed;">Impact</a></p>
-            <p>Use these new links btw </p>
-            <div id="disqus_thread"></div>
-            <script>
-                var disqus_config = function () {
-                this.page.url = 'https://chaoscore1412.github.io/CS-comment-wrapper/';  // Replace PAGE_URL with your page's canonical URL variable
-                this.page.identifier = 'https://chaoscore1412.github.io/CS-comment-wrapper/'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-                };
-                (function() { // DON'T EDIT BELOW THIS LINE
-                var d = document, s = d.createElement('script');
-                s.src = 'https://fake-cs.disqus.com/embed.js';
-                s.setAttribute('data-timestamp', +new Date());
-                (d.head || d.body).appendChild(s);
-                })();
-            </script>
-            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Last CS · Forum</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- lightbox2-like simple style for enlarged images (inline) -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f0f3f8;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 30px 16px;
+            min-height: 100vh;
+        }
+
+        .forum-container {
+            max-width: 880px;
+            width: 100%;
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+        }
+
+        .forum-header {
+            padding: 28px 32px 12px 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #e6ecf3;
+        }
+
+        .forum-header h2 {
+            font-weight: 550;
+            color: #0b1a2a;
+        }
+
+        .new-thread-card {
+            background: #f8fafd;
+            margin: 22px 30px 28px 30px;
+            padding: 24px;
+            border-radius: 28px;
+            border: 1px solid #dee7f0;
+            box-shadow: 0 4px 10px rgba(0, 20, 40, 0.02);
+        }
+
+        .input-group textarea {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px dashed #b9cadb;
+            border-radius: 30px;
+            font-size: 1rem;
+            background: white;
+            transition: 0.15s;
+            resize: vertical;
+        }
+
+        .input-group textarea:focus {
+            border-color: #2e9afe;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 154, 254, 0.2);
+            border-style: solid;
+        }
+
+        /* drag-drop highlight */
+        .drag-over {
+            border-color: #2e9afe !important;
+            background: #e8f0fe !important;
+        }
+
+        .file-attach-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 18px;
+            margin: 16px 0 10px;
+        }
+
+        .custom-file-label,
+        .format-btn {
+            background: #eef2f6;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .format-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .format-btn {
+            background: white;
+            border: 1px solid #cbd6e3;
+            padding: 6px 14px;
+        }
+
+        .format-btn:hover {
+            background: #e2ecf7;
+        }
+
+        .send-main-btn {
+            background: #2e9afe;
+            border: none;
+            color: white;
+            padding: 10px 32px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #1a7fd1;
+        }
+
+        /* preview thumbnails */
+        .preview-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 15px 0 8px;
+        }
+
+        .thumb-preview {
+            position: relative;
+            width: 70px;
+            height: 70px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .thumb-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumb-preview .remove-preview {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff4d4f;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid white;
+        }
+
+        .thread-list {
+            padding: 0 30px 40px 30px;
+        }
+
+        /* comment cards */
+        .comment-card,
+        .reply-card {
+            margin-bottom: 24px;
+            border-bottom: 1px solid #ecf1f7;
+            padding-bottom: 20px;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .comment-avatar img {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #b7c9dd;
+        }
+
+        .comment-author {
+            font-weight: 600;
+        }
+
+        .comment-id-badge {
+            background: #eef3f8;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+        }
+
+        .comment-time {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-left: auto;
+        }
+
+        .comment-body {
+            margin-left: 54px;
+        }
+
+        .comment-content {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .comment-content b {
+            font-weight: 600;
+        }
+
+        .comment-content i {
+            font-style: italic;
+        }
+
+        .comment-content span[style*="color"] {
+            display: inline;
+        }
+
+        .comment-image {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 12px 0 6px;
+        }
+
+        .comment-image img {
+            max-width: 180px;
+            max-height: 180px;
+            border-radius: 16px;
+            border: 1px solid #dde3ec;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .comment-image img:active {
+            transform: scale(0.98);
+        }
+
+        .comment-actions {
+            margin-left: 54px;
+            margin-top: 10px;
+        }
+
+        .reply-toggle-btn {
+            background: none;
+            border: none;
+            color: #2e9afe;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .reply-box-nested {
+            margin-left: 54px;
+            margin-top: 15px;
+            background: #f9fcff;
+            border-radius: 24px;
+            padding: 18px;
+            border: 1px solid #d7e2ee;
+            display: none;
+        }
+
+        .reply-box-nested textarea {
+            width: 100%;
+            border-radius: 30px;
+            border: 1px solid #b9ccdf;
+            padding: 10px 18px;
+        }
+
+        .send-reply-mini {
+            background: #2e9afe;
+            color: white;
+            border: none;
+            padding: 6px 22px;
+            border-radius: 40px;
+            margin-top: 10px;
+        }
+
+        .replies-section {
+            margin-left: 54px;
+            border-left: 3px solid #cfdeef;
+            padding-left: 22px;
+        }
+
+        .forum-footer {
+            padding: 16px 30px;
+            background: #f5f9ff;
+            border-top: 1px solid #dde5f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .live-dot {
+            background: #1bb86b;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* overlay auth modal */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .auth-modal {
+            background: white;
+            width: 420px;
+            border-radius: 40px;
+            padding: 28px;
+            box-shadow: 0 40px 80px black;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 20px;
+            border-bottom: 1px solid #dae2ec;
+            padding-bottom: 8px;
+        }
+
+        .auth-tab {
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: #5c6f87;
+            cursor: pointer;
+            padding: 6px 0;
+        }
+
+        .auth-tab.active {
+            color: #1f7ed3;
+            border-bottom: 3px solid #1f7ed3;
+        }
+
+        .auth-form {
+            margin-top: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 60px;
+            border: 1px solid #bfd2e6;
+            font-size: 1rem;
+        }
+
+        .auth-btn {
+            background: #1f7ed3;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 60px;
+            font-weight: bold;
+        }
+
+        .auth-note {
+            text-align: center;
+            margin-top: 16px;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 2rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* image enlargement overlay (lightbox) */
+        .enlarge-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .enlarge-overlay.active {
+            display: flex;
+        }
+
+        .enlarged-img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 0 40px black;
+        }
+
+        .close-enlarge {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: white;
+            font-size: 3rem;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- LOGIN OVERLAY (dark background) -->
+    <div class="overlay" id="authOverlay">
+        <div class="auth-modal">
+            <button class="close-modal" id="closeModalBtn">&times;</button>
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="loginTab">Log in</button>
+                <button class="auth-tab" id="signupTab">Sign up</button>
+            </div>
+            <!-- login form (2 fields: email, password) -->
+            <div class="auth-form" id="loginForm">
+                <div class="form-group"><input type="email" id="login-email" placeholder="Email"></div>
+                <div class="form-group"><input type="password" id="login-password" placeholder="Password"></div>
+                <button class="auth-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Log in</button>
+                <div class="auth-note">No account? <button id="switchToSignup" style="background:none;border:none;color:#1f7ed3;">Sign up</button></div>
+            </div>
+            <!-- signup form (3 fields: email, display name, password) plus hidden display name used in signUp() -->
+            <div class="auth-form" id="signupForm" style="display:none;">
+                <div class="form-group"><input type="email" id="signup-email" placeholder="Email"></div>
+                <div class="form-group"><input type="text" id="signup-displayname" placeholder="Display name"></div>
+                <div class="form-group"><input type="password" id="signup-password" placeholder="Password"></div>
+                <button class="auth-btn" id="signupBtn"><i class="fas fa-user-plus"></i> Sign up</button>
+                <div class="auth-note">Already member? <button id="switchToLogin" style="background:none;border:none;color:#1f7ed3;">Log in</button></div>
+            </div>
         </div>
-    </body>
+    </div>
+
+    <!-- image enlarge overlay (simple) -->
+    <div class="enlarge-overlay" id="enlargeOverlay">
+        <span class="close-enlarge" id="closeEnlarge">&times;</span>
+        <img class="enlarged-img" id="enlargedImg" src="" alt="">
+    </div>
+
+    <!-- MAIN FORUM -->
+    <div class="forum-container">
+        <div class="forum-header">
+            <i class="fas fa-comments" style="color:#2e9afe;"></i>
+            <h2>The Last CS <span style="font-weight:400;">/ forum</span></h2>
+            <button id="openLoginBtn" style="margin-left:auto; background:#edf2f9; border:none; border-radius:40px; padding:8px 18px;"><i class="far fa-user-circle"></i> Login</button>
+        </div>
+
+        <!-- new discussion card with formatting & drag-drop & preview -->
+        <div class="new-thread-card">
+            <h3><i class="fas fa-pencil-alt"></i> Start a new discussion</h3>
+            <!-- formatting buttons -->
+            <div class="format-bar">
+                <button class="format-btn" id="boldBtn"><i class="fas fa-bold"></i></button>
+                <button class="format-btn" id="italicBtn"><i class="fas fa-italic"></i></button>
+                <button class="format-btn" id="colorBtn"><i class="fas fa-palette"></i> color</button>
+                <input type="color" id="colorPicker" style="width:40px; height:36px; border-radius:30px; border:none; vertical-align:middle;">
+            </div>
+            <div class="input-group">
+                <textarea id="messageInput" rows="3" placeholder="Write your comment or question... (drag & drop images)"></textarea>
+            </div>
+            <!-- preview container for dragged/selected images -->
+            <div class="preview-area" id="globalPreview"></div>
+
+            <div class="file-attach-row">
+                <label for="globalImage" class="custom-file-label"><i class="fas fa-image"></i> Attach images</label>
+                <input type="file" id="imageInput" accept="image/*" multiple style="display:none;">
+                <button class="send-main-btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Post comment</button>
+            </div>
+            <div class="small-note"><i class="far fa-lightbulb"></i> bold, italic, <span style="color:#c6362e;">colors</span> and drag-drop images</div>
+        </div>
+
+        <!-- thread list -->
+        <div class="thread-list" id="chat"></div>
+
+        <div class="forum-footer">
+            <span><i class="far fa-comment-dots"></i> real‑time updates</span>
+            <span class="live-badge"><span class="live-dot"></span> live</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const SUPABASE_URL = "https://ixswnnjhjreoewlbnzhp.supabase.co";
+            const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4c3dubmpoanJlb2V3bGJuemhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNzA1MjgsImV4cCI6MjA4NzY0NjUyOH0.s6-SB78wtXb5SAro9FRvBvA292VxH2bJxOH22si3GpQ";
+
+            const Supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            const chatDiv = document.getElementById("chat");
+            
+            // ---------- AUTH functions (exactly as provided, with display name fix) ----------
+            async function signUp() {
+                const email = document.getElementById("signup-email").value;
+                const password = document.getElementById("signup-password").value;
+                const displayName = document.getElementById("signup-displayname").value; // display name field
+                if (!displayName) {
+                    alert("Display name required");
+                    return;
+                }
+                const {data,error} = await Supabase.auth.signUp({email,password});
+                if (error) {
+                    alert(error.message);
+                    return;
+                }
+                const userId = data.user.id;
+                await Supabase.from("user_profile").insert({id: userId, display_name: displayName, image_url: "https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg"});
+                
+                alert("Signup successful! Check your email if confirmation is enabled.");
+                overlay.classList.remove('active');
+            }
+
+            async function login() {
+                const email = document.getElementById("login-email").value;
+                const password = document.getElementById("login-password").value;
+                const {data,error} = await Supabase.auth.signInWithPassword({email,password});
+                if (error) {
+                    alert(error.message);
+                    return;
+                }
+                alert("Login successful!");
+                overlay.classList.remove('active');
+            }
+
+            async function logout() {
+                await Supabase.auth.signOut();
+                alert("Logged out");
+                location.reload();
+            }
+            
+            async function getProfile() {
+                const { data: { user } } = await Supabase.auth.getUser();
+
+                if (!user) return null;
+
+                const { data: profile } = await Supabase
+                    .from("user_profiles")
+                    .select("*")
+                    .eq("id", user.id)
+                    .single();
+
+                return profile;
+            }
+
+            async function logout() {
+                await Supabase.auth.signOut();
+                alert("Logged out");
+            }
+            // overlay logic
+            const overlay = document.getElementById('authOverlay');
+            const openLoginBtn = document.getElementById('openLoginBtn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const loginTab = document.getElementById('loginTab');
+            const signupTab = document.getElementById('signupTab');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const switchToSignup = document.getElementById('switchToSignup');
+            const switchToLogin = document.getElementById('switchToLogin');
+            document.getElementById('loginBtn').addEventListener('click', login);
+            document.getElementById('signupBtn').addEventListener('click', signUp);
+
+            openLoginBtn.addEventListener('click', () => overlay.classList.add('active'));
+            closeModalBtn.addEventListener('click', () => overlay.classList.remove('active'));
+            loginTab.addEventListener('click', () => {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.style.display = 'block';
+                signupForm.style.display = 'none';
+            });
+            signupTab.addEventListener('click', () => {
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+                signupForm.style.display = 'block';
+                loginForm.style.display = 'none';
+            });
+            switchToSignup.addEventListener('click', (e) => {
+                e.preventDefault();
+                signupTab.click();
+            });
+            switchToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginTab.click();
+            });
+            // ---------- drag & drop + image preview (global) ----------
+            const messageInput = document.getElementById('messageInput');
+            const globalPreview = document.getElementById('globalPreview');
+            const imageInput = document.getElementById('imageInput');
+            let selectedFiles = []; // store for upload
+
+            function updatePreview() {
+                globalPreview.innerHTML = '';
+                selectedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const thumb = document.createElement('div');
+                        thumb.className = 'thumb-preview';
+                        thumb.innerHTML = `<img src="${e.target.result}"><span class="remove-preview" data-index="${index}">&times;</span>`;
+                        globalPreview.appendChild(thumb);
+                        thumb.querySelector('.remove-preview').addEventListener('click', () => {
+                            selectedFiles.splice(index, 1);
+                            updatePreview();
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            messageInput.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                messageInput.classList.add('drag-over');
+            });
+            messageInput.addEventListener('dragleave', () => messageInput.classList.remove('drag-over'));
+            messageInput.addEventListener('drop', (e) => {
+                e.preventDefault();
+                messageInput.classList.remove('drag-over');
+                const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+                selectedFiles = [...selectedFiles, ...files];
+                updatePreview();
+            });
+
+            imageInput.addEventListener('change', () => {
+                const files = Array.from(imageInput.files);
+                selectedFiles = [...selectedFiles, ...files];
+                updatePreview();
+            });
+
+            // formatting buttons
+            document.getElementById('boldBtn').addEventListener('click', () => insertWrap('**', '**'));
+            document.getElementById('italicBtn').addEventListener('click', () => insertWrap('*', '*'));
+            document.getElementById('colorBtn').addEventListener('click', () => {
+                const color = document.getElementById('colorPicker').value;
+                insertWrap(`<span style="color:${color};">`, '</span>');
+            });
+
+            function insertWrap(before, after) {
+                const start = messageInput.selectionStart,
+                    end = messageInput.selectionEnd;
+                const text = messageInput.value;
+                messageInput.value = text.slice(0, start) + before + text.slice(start, end) + after + text.slice(end);
+            }
+            
+            // ---------- create message element (with clickable image enlarge) ----------
+            function createMessageElement(message, isReply = false) {
+                const card = document.createElement('div');
+                card.className = isReply ? 'reply-card' : 'comment-card';
+                card.dataset.messageId = message.id;
+
+                const profile = message.user_profile || {
+                    display_name: 'anon',
+                    image_url: '/default-avatar.png'
+                };
+                const displayName = profile.display_name || 'member';
+                const avatarUrl = profile.image_url || '/default-avatar.png';
+
+                const headerHtml = `<div class="comment-header"><div class="comment-avatar"><img src="${avatarUrl}" alt="avatar"></div><span class="comment-author">${displayName}</span><span class="comment-id-badge">#${message.id.slice(0,6)}</span><span class="comment-time"><i class="far fa-clock"></i> ${new Date(message.created_at).toLocaleString()}</span></div>`;
+                const bodyHtml = `<div class="comment-body"><div class="comment-content">${message.content || ''}</div></div>`;
+                card.innerHTML = headerHtml + bodyHtml;
+
+                // images (multiple)
+                if (message.message_images && message.message_images.length > 0) {
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'comment-image';
+                    message.message_images.forEach(img => {
+                        const imgEl = document.createElement('img');
+                        imgEl.src = img.image_url;
+                        imgEl.loading = 'lazy';
+                        imgEl.style.cursor = 'pointer';
+                        imgEl.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            document.getElementById('enlargedImg').src = img.image_url;
+                            document.getElementById('enlargeOverlay').classList.add('active');
+                        });
+                        imgContainer.appendChild(imgEl);
+                    });
+                    card.querySelector('.comment-body').appendChild(imgContainer);
+                }
+
+                // actions & reply box (same as original)
+                const replyBoxId = `replyBox-${message.id}`;
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'comment-actions';
+                actionsDiv.innerHTML = `<button class="reply-toggle-btn" data-target="${replyBoxId}"><i class="fas fa-reply"></i> Reply</button>`;
+                card.appendChild(actionsDiv);
+
+                const replyBox = document.createElement('div');
+                replyBox.className = 'reply-box-nested';
+                replyBox.id = replyBoxId;
+                replyBox.innerHTML = `<textarea rows="2" placeholder="Write a reply..."></textarea><div class="reply-attach-row"><div class="reply-attach-left"><label for="file-${message.id}" class="mini-file-label"><i class="fas fa-paperclip"></i> image</label><input type="file" id="file-${message.id}" class="reply-image-hidden" accept="image/*" style="display:none;" multiple></div><button class="send-reply-mini" data-parent="${message.id}"><i class="fas fa-reply"></i> Post reply</button></div>`;
+                card.appendChild(replyBox);
+
+                // toggle reply
+                card.querySelector('.reply-toggle-btn').addEventListener('click', () => {
+                    replyBox.style.display = replyBox.style.display === 'none' ? 'block' : 'none';
+                });
+
+                // mini file label
+                card.querySelector('.mini-file-label').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    card.querySelector(`.reply-image-hidden`).click();
+                });
+
+                // send reply (uses Post logic, but we simplify to call Post with parent_id)
+                card.querySelector('.send-reply-mini').addEventListener('click', async () => {
+                    const textarea = replyBox.querySelector('textarea');
+                    const content = textarea.value.trim();
+                    const fileInput = replyBox.querySelector('input[type="file"]');
+                    const files = fileInput.files; // handle multiple? we keep one for simplicity, but structure ok.
+                    // using existing Post function - but Post uses global imageInput, we adapt quick
+                    if (!content && files.length === 0) return alert('empty');
+                    // we'll call an inline upload to not break original Post, but easier: call a separate reply function. keep original code structure:
+                    // We'll just reuse similar pattern as original Post but with parent_id. For brevity, call PostWithParent
+                    await postMessage(content, files.length ? files[0] : null, message.id);
+                    textarea.value = '';
+                    fileInput.value = '';
+                    replyBox.style.display = 'none';
+                    await loadMessages();
+                });
+
+                return card;
+            }
+
+            // unified post function (supports parent_id)
+            async function postMessage(content, files, parent_id = null) {
+                if (!content && !files) {
+                    alert("text or image");
+                    return;
+                }
+                const {data : profile_data, error : profile_error} = await Supabase.auth.getUser();
+                const {data : message_data, error : message_error} = await Supabase.from('messages').insert({content, parent_id, sender: profile_data.user.id}).select('id').single();
+                
+                if (message_error) {
+                    alert("Failed");
+                    console.error(message_error);
+                    return;
+                }
+                
+                if (files) {
+                    for (const file of files) {
+                    const filePath = `$images/${profile_data.user.id}/${message_data.id}/${Date.now()}-${file.name}`;
+                    const {data : uploadData, error : uploadError } = await Supabase.storage.from("Images").upload(filePath, file);
+                    
+                    if (uploadError) {
+                        console.error(uploadError);
+                        continue;
+                    }
+
+                    const {publicUrl} = Supabase.storage.from('Images').getPublicUrl(uploadData.path).data;
+                    await Supabase.from("message_images").insert({message_id: message_data.id,image_url: publicUrl});
+                }
+            }
+            }
+            async function loadMessages() {
+                chatDiv.innerHTML = '';
+                const {data,error} = await Supabase
+                    .from('messages')
+                    .select(`*, user_profile(display_name, image_url), message_images(image_url)`)
+                    .order('created_at', {ascending: false});
+                
+                if (error) {
+                    console.error(error);
+                    return;
+                }
+                if (!data.length) {
+                    chatDiv.innerHTML = `<div class="empty-threads"><i class="far fa-comments"></i><br />No discussions yet.</div>`;
+                    return;
+                }
+
+                const msgMap = {},
+                    roots = [];
+                data.forEach(m => {
+                    m.children = [];
+                    msgMap[m.id] = m;
+                });
+                data.forEach(m => {
+                    if (m.parent_id) msgMap[m.parent_id]?.children.push(m);
+                    else roots.push(m);
+                });
+
+                function renderTree(list, container, isReply = false) {
+                    list.forEach(msg => {
+                        container.appendChild(createMessageElement(msg, isReply));
+                        if (msg.children.length) {
+                            const replyDiv = document.createElement('div');
+                            replyDiv.className = 'replies-section';
+                            container.appendChild(replyDiv);
+                            renderTree(msg.children, replyDiv, true);
+                        }
+                    });
+                }
+                renderTree(roots, chatDiv);
+            }
+                    
+            document.getElementById("sendBtn").addEventListener("click", async () => {
+                const content = document.getElementById("messageInput").value.trim();
+                const file = selectedFiles.length ? selectedFiles : null;
+                await postMessage(content, file, null);
+                document.getElementById("messageInput").value = '';
+                selectedFiles = [];
+                updatePreview();
+                document.getElementById("imageInput").value = '';
+                await loadMessages();
+            });
+
+            // close enlarge
+            document.getElementById('closeEnlarge').addEventListener('click', () => {
+                document.getElementById('enlargeOverlay').classList.remove('active');
+            });
+                
+            document.getElementById('enlargeOverlay').addEventListener('click', (e) => {
+                if (e.target.classList.contains('enlarge-overlay'))
+                    document.getElementById('enlargeOverlay').classList.remove('active');
+            });
+
+            document.querySelector('.custom-file-label')?.addEventListener('click', (e) => {
+                document.getElementById('imageInput')?.click();
+            });
+            loadMessages();
+        })();
+
+    </script>
+</body>
+
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
