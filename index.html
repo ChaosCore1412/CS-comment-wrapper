@@ -894,7 +894,7 @@
                         // 3. Convert YouTube links to embeds (before linkify to avoid double wrapping)
                         const ytRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})(?:[^\s]*)/g;
                         html = html.replace(ytRegex, (match, videoId) => {
-                            return `<div class="yt-embed"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="yt-info"><a href="https://youtu.be/${videoId}" target="_blank" rel="noopener">Watch on YouTube ▶</a></div></div>`;
+                            return `<div class="yt-embed"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`;
                         });
 
                         // 4. Convert plain URLs to clickable links (excluding those already inside <a> tags)
@@ -1266,3 +1266,4 @@
         </body>
 
         </html>
+
