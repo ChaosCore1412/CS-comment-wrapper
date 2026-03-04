@@ -4,7 +4,7 @@
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-             <meta name="referrer" content="strict-origin-when-cross-origin">   
+            <meta name="referrer" content="strict-origin-when-cross-origin">
             <link rel="shortcut icon" href="https://raw.githubusercontent.com/ChaosCore1412/CS-comment-wrapper/refs/heads/main/icons/Buh.png">
             <title>The Last CS</title>
             <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -728,9 +728,9 @@
                     let currentUser = null;
                     let currentProfile = null;
 
-                    let allMessages = [];           // flat list
-                    let topLevelMessages = [];       // roots only
-                    let PAGE_SIZE = 10;      // pagination limit
+                    let allMessages = []; // flat list
+                    let topLevelMessages = []; // roots only
+                    let PAGE_SIZE = 10; // pagination limit
 
 
                     // Helper: timeAgo (unchanged)
@@ -775,6 +775,7 @@
                             greetingContainer.innerHTML = '';
                         }
                     }
+
                     function updateGreeting() {
                         if (currentProfile) {
                             greetingContainer.innerHTML = `<div class="user-greeting"><i class="fas fa-smile"></i> Welcome, ${currentProfile.display_name || 'member'}</div>`;
@@ -845,9 +846,13 @@
                         if (file) {
                             const ext = file.name.split('.').pop();
                             const path = `avatars/${currentUser.id}/${Date.now()}.${ext}`;
-                            const {error: uploadErr} = await Supabase.storage.from('Images').upload(path, file);
+                            const {
+                                error: uploadErr
+                            } = await Supabase.storage.from('Images').upload(path, file);
                             if (!uploadErr) {
-                                const {data: pub} = Supabase.storage.from('Images').getPublicUrl(path);
+                                const {
+                                    data: pub
+                                } = Supabase.storage.from('Images').getPublicUrl(path);
                                 imageUrl = pub.publicUrl;
                             } else alert('upload failed');
                         }
@@ -876,7 +881,9 @@
                     async function editMessage(messageId, oldContent) {
                         const newText = prompt('Edit your message:', oldContent);
                         if (newText !== null) {
-                            await Supabase.from('messages').update({ content: newText }).eq('id', messageId);
+                            await Supabase.from('messages').update({
+                                content: newText
+                            }).eq('id', messageId);
                             loadMessages();
                         }
                     }
@@ -987,28 +994,41 @@
                         imageInput.value = '';
 
                         // Refresh: reload top-level paginated
-                        resetAndLoadTopLevel();
+                        renderTopLevel();
                     }
-                
-                                    // ---------- load messages with pagination ----------
+
+                    // ---------- load messages with pagination ----------
                     async function loadMessages() {
-                        const { data, error } = await Supabase
+                        const {
+                            data,
+                            error
+                        } = await Supabase
                             .from('messages')
                             .select(`*, user_profile(display_name, image_url), message_images(image_url)`)
-                            .order('created_at', { ascending: false });
+                            .order('created_at', {
+                                ascending: false
+                            });
                         if (error) return console.error(error);
                         allMessages = data;
                         // build tree
-                        const map = {}; allMessages.forEach(m => { m.children = []; map[m.id] = m; });
-                        allMessages.forEach(m => { if (m.parent_id && map[m.parent_id]) map[m.parent_id].children.push(m); });
-                        topLevelMessages = allMessages.filter(m => !m.parent_id).sort((a,b)=> new Date(b.created_at)-new Date(a.created_at));
+                        const map = {};
+                        allMessages.forEach(m => {
+                            m.children = [];
+                            map[m.id] = m;
+                        });
+                        allMessages.forEach(m => {
+                            if (m.parent_id && map[m.parent_id]) map[m.parent_id].children.push(m);
+                        });
+                        topLevelMessages = allMessages.filter(m => !m.parent_id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                         renderTopLevel();
                     }
+
                     function renderTopLevel() {
                         chatDiv.innerHTML = '';
                         const toShow = topLevelMessages.slice(0, PAGE_SIZE);
-                        if (toShow.length === 0) { chatDiv.innerHTML = '<div class="empty-threads">No discussions yet.</div>'; }
-                        else {
+                        if (toShow.length === 0) {
+                            chatDiv.innerHTML = '<div class="empty-threads">No discussions yet.</div>';
+                        } else {
                             toShow.forEach(msg => {
                                 chatDiv.appendChild(createMessageElement(msg, false));
                                 if (msg.children.length) {
@@ -1027,8 +1047,9 @@
                             loadMoreDiv.style.display = 'none';
                         }
                     }
+
                     function renderReplies(children, container) {
-                        children.sort((a,b)=> new Date(a.created_at)-new Date(b.created_at)).forEach(r => {
+                        children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).forEach(r => {
                             container.appendChild(createMessageElement(r, true));
                             if (r.children.length) {
                                 const sub = document.createElement('div');
@@ -1038,8 +1059,8 @@
                             }
                         });
                     }
-                
-                function createMessageElement(msg, isReply, depth = 0) {
+
+                    function createMessageElement(msg, isReply, depth = 0) {
                         const card = document.createElement('div');
                         card.className = isReply ? 'reply-card' : 'comment-card';
                         card.dataset.messageId = msg.id;
@@ -1144,12 +1165,12 @@
                             fileInput.value = '';
                             replyBox.style.display = 'none';
                             // refresh after reply
-                            await resetAndLoadTopLevel();
+                            await renderTopLevel();
                         });
 
                         return card;
                     }
-                    
+
                     // preview & drag-drop
                     function updatePreview() {
                         globalPreview.innerHTML = '';
@@ -1266,4 +1287,3 @@
         </body>
 
         </html>
-
