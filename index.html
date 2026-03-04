@@ -865,7 +865,21 @@
                             refreshUser();
                         }
                     });
+                    // delete message
+                    async function deleteMessage(messageId) {
+                        if (!confirm('Delete message?')) return;
+                        await Supabase.from('messages').delete().eq('id', messageId);
+                        loadMessages();
+                    }
 
+                    // edit: prompt new content (simplified)
+                    async function editMessage(messageId, oldContent) {
+                        const newText = prompt('Edit your message:', oldContent);
+                        if (newText !== null) {
+                            await Supabase.from('messages').update({ content: newText }).eq('id', messageId);
+                            loadMessages();
+                        }
+                    }
                     // -------------------- Text formatting & link detection + YouTube --------------------
                     function enhanceContent(text) {
                         if (!text) return '';
