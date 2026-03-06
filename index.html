@@ -728,12 +728,12 @@
                     let currentUser = null;
                     let currentProfile = null;
 
-                    let allMessages = []; // flat list
-                    let topLevelMessages = []; // roots only
-                    let PAGE_SIZE = 10; // pagination limit
+                    let allMessages = [];
+                    let topLevelMessages = [];
+                    let PAGE_SIZE = 10;
 
 
-                    // Helper: timeAgo (unchanged)
+                    // Helper
                     function timeAgo(dateStr) {
                         if (dateStr == null) {
                             return;
@@ -857,8 +857,6 @@
                         await server.from('messages').delete().eq('id', messageId);
                         loadMessages();
                     }
-
-                    // edit: prompt new content (simplified)
                     async function editMessage(messageId, oldContent) {
                         const newText = prompt('Edit your message:', oldContent);
                         if (newText !== null) {
@@ -866,7 +864,7 @@
                             loadMessages();
                         }
                     }
-                    // -------------------- Text formatting & link detection + YouTube --------------------
+
                     function TextFormatting(text) {
                         if (!text) return '';
 
@@ -902,7 +900,7 @@
                             try {
                                 const compressedBlob = await new Promise((resolve, reject) => {
                                     new Compressor(file, {
-                                        quality: 0.7,
+                                        quality: 0.5,
                                         maxWidth: 1280,
                                         maxHeight: 1280,
                                         mimeType:"auto",
@@ -929,7 +927,7 @@
                         try {
                                 const compressedBlob = await new Promise((resolve, reject) => {
                                     new Compressor(file, {
-                                        quality: 0.7,
+                                        quality: 0.4,
                                         maxWidth: 1280,
                                         maxHeight: 1280,
                                         mimeType:"auto",
@@ -951,7 +949,7 @@
                             }
                         return pubUrl;
                     }
-                    // Modified postMessage to use compression
+                    
                     async function postMessage(content, files, parent_id = null) {
                         if (!content && (!files || files.length === 0)) return alert('empty post');
                         if (!currentUser) return alert('You must be logged in');
@@ -990,7 +988,6 @@
                         renderTopLevel();
                     }
 
-                    // ---------- load messages with pagination ----------
                     async function loadMessages() {
                         const {data,error} = await server.from('messages').select(`*, user_profile(display_name, image_url), message_images(image_url)`).order('created_at', {ascending: false}).limit(100);
                         
