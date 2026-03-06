@@ -684,9 +684,9 @@
             <script>
                 (function() {
                     // -------------------- CONFIG --------------------
-                    const SUPABASE_URL = "https://ixswnnjhjreoewlbnzhp.supabase.co"; // ← insert your supabase url
-                    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4c3dubmpoanJlb2V3bGJuemhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNzA1MjgsImV4cCI6MjA4NzY0NjUyOH0.s6-SB78wtXb5SAro9FRvBvA292VxH2bJxOH22si3GpQ"; // ← insert anon key
-                    const Supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    const SUPABASE_URL = "https://ixswnnjhjreoewlbnzhp.supabase.co";
+                    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4c3dubmpoanJlb2V3bGJuemhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNzA1MjgsImV4cCI6MjA4NzY0NjUyOH0.s6-SB78wtXb5SAro9FRvBvA292VxH2bJxOH22si3GpQ"; 
+                    const server = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
                     // -------------------- DOM elements --------------------
                     const chatDiv = document.getElementById('chat');
@@ -762,12 +762,12 @@
                             data: {
                                 user
                             }
-                        } = await Supabase.auth.getUser();
+                        } = await server.auth.getUser();
                         currentUser = user;
                         if (user) {
                             const {
                                 data: profile
-                            } = await Supabase.from('user_profile').select('*').eq('id', user.id).single();
+                            } = await server.from('user_profile').select('*').eq('id', user.id).single();
                             currentProfile = profile;
                             updateGreeting();
                         } else {
@@ -775,7 +775,6 @@
                             greetingContainer.innerHTML = '';
                         }
                     }
-
                     function updateGreeting() {
                         if (currentProfile) {
                             greetingContainer.innerHTML = `<div class="user-greeting"><i class="fas fa-smile"></i> Welcome, ${currentProfile.display_name || 'member'}</div>`;
@@ -790,20 +789,10 @@
                         const password = document.getElementById('signup-password').value;
                         const displayName = document.getElementById('signup-displayname').value;
                         if (!displayName) return alert('Display name required');
-                        const {
-                            data,
-                            error
-                        } = await Supabase.auth.signUp({
-                            email,
-                            password
-                        });
+                        const {data,error} = await server.auth.signUp({email,password});
                         if (error) return alert(error.message);
                         const userId = data.user.id;
-                        await Supabase.from('user_profile').insert({
-                            id: userId,
-                            display_name: displayName,
-                            image_url: 'https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg'
-                        });
+                        await server.from('user_profile').insert({id: userId,display_name: displayName});
                         alert('Signup successful! Check email if confirmation required.');
                         overlay.classList.remove('active');
                         refreshUser();
@@ -813,7 +802,7 @@
                         const password = document.getElementById('login-password').value;
                         const {
                             error
-                        } = await Supabase.auth.signInWithPassword({
+                        } = await server.auth.signInWithPassword({
                             email,
                             password
                         });
@@ -822,9 +811,10 @@
                         refreshUser();
                     }
                     async function logout() {
-                        await Supabase.auth.signOut();
+                        await server.auth.signOut();
                         settingsOverlay.classList.remove('active');
                         refreshUser();
+                        
                     }
 
                     // settings: update profile & avatar
@@ -842,38 +832,29 @@
                         if (!currentUser) return alert('login first');
                         const newName = settingsDisplayName.value.trim();
                         const file = settingsAvatar.files[0];
-                        let imageUrl = currentProfile?.image_url;
+                        let imageUrl = currentProfile.image_url ? currentProfile.image_url : "";
                         if (file) {
-                            const ext = file.name.split('.').pop();
-                            const path = `avatars/${currentUser.id}/${Date.now()}.${ext}`;
-                            const {
-                                error: uploadErr
-                            } = await Supabase.storage.from('Images').upload(path, file);
-                            if (!uploadErr) {
-                                const {
-                                    data: pub
-                                } = Supabase.storage.from('Images').getPublicUrl(path);
-                                imageUrl = pub.publicUrl;
-                            } else alert('upload failed');
+                            imageUrl = await CompressProfileImages(file);
                         }
                         const updates = {};
                         if (newName) updates.display_name = newName;
                         if (imageUrl) updates.image_url = imageUrl;
                         if (Object.keys(updates).length === 0) return;
-                        const {
-                            error
-                        } = await Supabase.from('user_profile').update(updates).eq('id', currentUser.id);
-                        if (error) alert(error.message);
+                        const {error} = await server.from('user_profile').update(updates).eq('id', currentUser.id);
+                        if (error) {
+                            alert(error.message);
+                        }
                         else {
                             alert('profile updated');
                             settingsOverlay.classList.remove('active');
                             refreshUser();
                         }
                     });
-                    // delete message
+                    
+                    
                     async function deleteMessage(messageId) {
                         if (!confirm('Delete message?')) return;
-                        await Supabase.from('messages').delete().eq('id', messageId);
+                        await server.from('messages').delete().eq('id', messageId);
                         loadMessages();
                     }
 
@@ -881,14 +862,12 @@
                     async function editMessage(messageId, oldContent) {
                         const newText = prompt('Edit your message:', oldContent);
                         if (newText !== null) {
-                            await Supabase.from('messages').update({
-                                content: newText
-                            }).eq('id', messageId);
+                            await server.from('messages').update({content: newText}).eq('id', messageId);
                             loadMessages();
                         }
                     }
                     // -------------------- Text formatting & link detection + YouTube --------------------
-                    function enhanceContent(text) {
+                    function TextFormatting(text) {
                         if (!text) return '';
 
                         // 1. Convert markdown **bold** and *italic* to HTML tags
@@ -917,7 +896,7 @@
                     }
 
                     // -------------------- Image compression & upload --------------------
-                    async function uploadCompressedImages(files, userId, messageId) {
+                    async function CompressMessageImage(files, userId, messageId) {
                         const uploadedUrls = [];
                         for (const file of files) {
                             try {
@@ -926,20 +905,14 @@
                                         quality: 0.7,
                                         maxWidth: 1280,
                                         maxHeight: 1280,
-                                        mimeType: 'image/jpeg',
+                                        mimeType:"auto",
                                         success: resolve,
                                         error: reject,
                                     });
                                 });
-                                const ext = 'jpg';
-                                const path = `images/${userId}/${messageId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
-                                const {
-                                    error: uploadErr
-                                } = await Supabase.storage.from('Images').upload(path, compressedBlob);
-                                if (!uploadErr) {
-                                    const {
-                                        data: pub
-                                    } = Supabase.storage.from('Images').getPublicUrl(path);
+                                const path = `images/${userId}/${messageId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
+                                const {error: uploadErr} = await server.storage.from('Images').upload(path, compressedBlob);
+                                if (!uploadErr) {const {data: pub} = server.storage.from('Images').getPublicUrl(path);
                                     uploadedUrls.push(pub.publicUrl);
                                 } else {
                                     console.error('upload error', uploadErr);
@@ -950,7 +923,34 @@
                         }
                         return uploadedUrls;
                     }
-
+                    async function CompressProfileImages(file) {
+                        let pubUrl ="";
+                        if(!file){return;}
+                        try {
+                                const compressedBlob = await new Promise((resolve, reject) => {
+                                    new Compressor(file, {
+                                        quality: 0.7,
+                                        maxWidth: 1280,
+                                        maxHeight: 1280,
+                                        mimeType:"auto",
+                                        success: resolve,
+                                        error: reject,
+                                    });
+                                });
+                                const ext = file.name.split('.').pop();
+                                const path = `avatars/${currentUser.id}/${Date.now()}.${ext}`;
+                                const {error: uploadErr} = await server.storage.from('Images').upload(path, compressedBlob);
+                                if (!uploadErr) {const {data: pub} = server.storage.from('Images').getPublicUrl(path);
+                                    pubUrl = pub.publicUrl;
+                                } else {
+                                    console.error('upload error', uploadErr);
+                                }
+                            } 
+                        catch (err) {
+                                console.error('compression failed', err);
+                            }
+                        return pubUrl;
+                    }
                     // Modified postMessage to use compression
                     async function postMessage(content, files, parent_id = null) {
                         if (!content && (!files || files.length === 0)) return alert('empty post');
@@ -959,14 +959,7 @@
                         sendBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> posting...';
 
                         // Insert message
-                        const {
-                            data: msg,
-                            error
-                        } = await Supabase.from('messages').insert({
-                            content,
-                            parent_id,
-                            sender: currentUser.id
-                        }).select('id').single();
+                        const {data: msg,error} = await server.from('messages').insert({content,parent_id,sender: currentUser.id}).select('id').single();
                         if (error) {
                             alert('error');
                             sendBtn.disabled = false;
@@ -976,9 +969,9 @@
 
                         // Upload compressed images
                         if (files && files.length) {
-                            const urls = await uploadCompressedImages(files, currentUser.id, msg.id);
+                            const urls = await CompressMessageImage(files, currentUser.id, msg.id);
                             for (const url of urls) {
-                                await Supabase.from('message_images').insert({
+                                await server.from('message_images').insert({
                                     message_id: msg.id,
                                     image_url: url
                                 });
@@ -999,18 +992,11 @@
 
                     // ---------- load messages with pagination ----------
                     async function loadMessages() {
-                        const {
-                            data,
-                            error
-                        } = await Supabase
-                            .from('messages')
-                            .select(`*, user_profile(display_name, image_url), message_images(image_url)`)
-                            .order('created_at', {
-                                ascending: false
-                            });
+                        const {data,error} = await server.from('messages').select(`*, user_profile(display_name, image_url), message_images(image_url)`).order('created_at', {ascending: false}).limit(100);
+                        
                         if (error) return console.error(error);
                         allMessages = data;
-                        // build tree
+
                         const map = {};
                         allMessages.forEach(m => {
                             m.children = [];
@@ -1022,7 +1008,6 @@
                         topLevelMessages = allMessages.filter(m => !m.parent_id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                         renderTopLevel();
                     }
-
                     function renderTopLevel() {
                         chatDiv.innerHTML = '';
                         const toShow = topLevelMessages.slice(0, PAGE_SIZE);
@@ -1047,7 +1032,6 @@
                             loadMoreDiv.style.display = 'none';
                         }
                     }
-
                     function renderReplies(children, container) {
                         children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).forEach(r => {
                             container.appendChild(createMessageElement(r, true));
@@ -1059,7 +1043,6 @@
                             }
                         });
                     }
-
                     function createMessageElement(msg, isReply, depth = 0) {
                         const card = document.createElement('div');
                         card.className = isReply ? 'reply-card' : 'comment-card';
@@ -1092,13 +1075,13 @@
                     </div>`;
 
                         // Content with enhanced HTML (links, newlines, youtube)
-                        const contentHtml = enhanceContent(msg.content || '');
+                        const contentHtml = TextFormatting(msg.content || '');
 
                         const bodyHtml = `<div class="comment-body"><div class="comment-content">${contentHtml}</div></div>`;
                         card.innerHTML = headerHtml + bodyHtml;
 
                         // Images
-                        if (msg.message_images?.length) {
+                        if (msg.message_images.length) {
                             const imgDiv = document.createElement('div');
                             imgDiv.className = 'comment-image';
                             msg.message_images.forEach(img => {
