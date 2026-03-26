@@ -1056,7 +1056,7 @@
                                 <div class="avatar-huge-container" id="avatarClickZone">
                                     <img id="avatarPreviewBig" class="profile-preview-big" src="https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg" alt="avatar">
                                     <div class="avatar-overlay-icon">
-                                            <i class="fas fa-camera"></i>
+                                    <i class="fas fa-camera"></i>
                                     </div>
                                 </div>
                                 <!-- hidden file input -->
@@ -1076,7 +1076,7 @@
                         </div>
                     </div>
             </div>
-            <div class="enlarge-overlay" id="enlargeOverlay"><span class="close-enlarge" id="closeEnlarge">&times;</span><img class="enlarged-img" id="enlargedImg" src="" alt=""></div>
+                <div class="enlarge-overlay" id="enlargeOverlay"><span class="close-enlarge" id="closeEnlarge">&times;</span><img class="enlarged-img" id="enlargedImg" src="" alt=""></div>
 
             <!-- MAIN FORUM -->
             <div class="forum-container">
@@ -1292,6 +1292,18 @@
                     }
 
                     // -------------------- Image compression & upload --------------------
+                    function compressImage(file) {
+                        return new Promise((resolve, reject) => {
+                            new Compressor(file, {
+                                quality: 0.6,
+                                maxWidth: 1280,
+                                maxHeight: 1280,
+                                mimeType: 'image/jpeg',
+                                success: resolve,
+                                error: reject,
+                            })
+                        })
+                    }
                     async function CompressMessageImage(files, userId, messageId) {
                         const uploadedUrls = [];
                         for (const file of files) {
@@ -1300,25 +1312,19 @@
                                 alert('File must be under 10MB')
                                 return
                             }
+                            
                             try {
                                 let image = file;
                                 if(file.type !== 'image/gif'){
-                                    image = await new Promise((resolve, reject) => {
-                                        new Compressor(image, {
-                                            quality: 0.6,
-                                            maxWidth: 1280,
-                                            maxHeight: 1280,
-                                            mimeType:"auto",
-                                            success: resolve,
-                                            error: reject,
-                                        });
-                                    });
+                                    image = await compressImage(file); 
                                 }
-                                const path = `image/${userId}/${messageId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
                                 
+                                const path = `image/${userId}/${messageId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
                                 const formData = new FormData();
-                                formData.append('file', resolve);
+                                
+                                formData.append('file', image);
                                 formData.append('path', path);
+                                
                                 const { data: pub, error: uploadErr } = await server.functions.invoke('upload-images', { body: formData })
                                 if (!uploadErr) {
                                     uploadedUrls.push(pub.publicUrl);
@@ -1342,21 +1348,12 @@
                         try {
                             let image = file;
                             if(file.type !== 'image/gif'){
-                                image = await new Promise((resolve, reject) => {
-                                    new Compressor(image, {
-                                        quality: 0.6,
-                                        maxWidth: 1280,
-                                        maxHeight: 1280,
-                                        mimeType:"auto",
-                                        success: resolve,
-                                        error: reject,
-                                    });
-                                });
+                                image = await compressImage(file); 
                             }
                             
                             const path = `avatars/${currentUser.id}/${Date.now()}`;
                             const formData = new FormData();
-                            formData.append('file', resolve);
+                            formData.append('file', image);
                             formData.append('path', path);
                             const { data, error: uploadErr } = await server.functions.invoke('upload-images', { body: formData });
 
