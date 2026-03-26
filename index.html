@@ -11,38 +11,46 @@
             <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.2.1/dist/compressor.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+            <link rel="stylesheet" href="styling.css">
             <style>
-                /* === complete style – same vibe with additions === */
                 * {
                     margin: 0;
                     padding: 0;
                     box-sizing: border-box;
                 }
-
-                body {
-                    background: #f0f3f8;
+                body {  
+                    background-image: url('https://4kwallpapers.com/images/walls/thumbs_3t/19754.jpg');
+                    background-repeat: no-repeat;
+                    background-position: center; /* Centers the image */
+                    background-size: cover;     /* Ensures the image covers the entire area */
+                    background-attachment: fixed; /* This is the key property */
                     font-family: 'Segoe UI', Roboto, sans-serif;
                     display: flex;
                     justify-content: center;
                     padding: 30px 16px;
                     min-height: 100vh;
                 }
-
                 .forum-container {
-                    max-width: 880px;
+                    max-width: 1200px;
                     width: 100%;
                     background: white;
                     border-radius: 28px;
                     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
                     overflow: hidden;
+                    justify-content: space-between; 
                 }
-
+                
+                .user-container{
+                    display: flex;
+                }
+                
                 .forum-header {
                     padding: 28px 32px 12px 32px;
                     display: flex;
                     align-items: center;
                     gap: 12px;
                     border-bottom: 1px solid #e6ecf3;
+                    justify-content: space-between;
                 }
 
                 .forum-header h2 {
@@ -80,15 +88,19 @@
                     border-radius: 28px;
                     border: 1px solid #dee7f0;
                 }
-
+                .input-group {
+                    border: 2px dashed #b9cadb;
+                    border-radius: 30px;
+                    background: white;
+                    padding: 10px;
+                }
                 .input-group textarea {
                     width: 100%;
                     padding: 16px 20px;
-                    border: 2px dashed #b9cadb;
-                    border-radius: 30px;
+                    border: 0px;
                     font-size: 1rem;
                     background: white;
-                    resize: vertical;
+                    resize: none;
                     line-height: 1.5;
                 }
 
@@ -98,7 +110,14 @@
                     box-shadow: 0 0 0 3px rgba(46, 154, 254, 0.2);
                     border-style: solid;
                 }
-
+                
+                .input-button-container{
+                    display: flex;
+                    padding-left: 12px;
+                    gap: 10px;
+                    align-items: center;
+                }
+                
                 .drag-over {
                     border-color: #2e9afe !important;
                     background: #e8f0fe !important;
@@ -180,7 +199,7 @@
 
                 .custom-file-label {
                     background: #eef2f6;
-                    padding: 8px 20px;
+                    padding: 8px;
                     border-radius: 40px;
                     cursor: pointer;
                     display: inline-flex;
@@ -209,7 +228,7 @@
                     padding: 0 30px 40px 30px;
                 }
 
-                /* unified card style for both top comments and replies */
+                /* Cards */
                 .comment-card,
                 .reply-card {
                     margin-bottom: 24px;
@@ -262,7 +281,6 @@
                 .comment-time {
                     font-size: 0.8rem;
                     color: #64748b;
-                    margin-left: auto;
                 }
 
                 .comment-body {
@@ -381,19 +399,10 @@
 
                 .replies-section .replies-section {
                     margin-left: 30px;
-                    /* slightly reduced for depth 2 */
-                }
-
-                .replies-section .replies-section .replies-section {
-                    margin-left: 20px;
-                    /* depth 3 – minimal indent */
                     border-left-style: dotted;
+                    
                 }
 
-                /* depth 4+ won't increase margin further (stays at 20px) thanks to subsequent rule */
-                .replies-section .replies-section .replies-section .replies-section {
-                    margin-left: 20px;
-                }
 
                 .forum-footer {
                     padding: 16px 30px;
@@ -480,17 +489,356 @@
                     display: flex;
                 }
 
-                .auth-modal,
+                .overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.7);
+                    backdrop-filter: blur(5px);
+                    display: none;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 2000;
+                }
+
+                .overlay.active {
+                    display: flex;
+                }
+
                 .settings-modal {
                     background: white;
-                    width: 420px;
+                    width: 780px;
+                    max-width: 90vw;
+                    border-radius: 48px;
+                    padding: 32px 36px;
+                    box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+                    transition: all 0.2s;
+                }
+                .auth-modal,
+                .settings-modal {
+                    min-width: 30%;
+                    min-height: 30%;
+                    background: white;
                     border-radius: 40px;
                     padding: 28px;
                     box-shadow: 0 40px 80px black;
                 }
 
-                .settings-modal {
-                    width: 460px;
+                .auth-tabs {
+                    display: flex;
+                    gap: 20px;
+                    border-bottom: 1px solid #dae2ec;
+                    padding-bottom: 8px;
+                }
+
+                .auth-tab {
+                    background: none;
+                    border: none;
+                    font-weight: 600;
+                    color: #5c6f87;
+                    cursor: pointer;
+                    padding: 6px 0;
+                }
+
+                .auth-tab.active {
+                    color: #1f7ed3;
+                    border-bottom: 3px solid #1f7ed3;
+                }
+                .close-modal {
+                    float: right;
+                    font-size: 2rem;
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: #6c7e97;
+                    transition: 0.2s;
+                }
+                .close-modal:hover { color: #1f2a3e; }
+                .settings-dashboard {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 36px;
+                    margin: 20px 0 28px;
+                }
+
+                .settings-left {
+                    flex: 2;
+                    min-width: 200px;
+                }
+
+                .settings-right {
+                    flex: 1.2;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: flex-start;
+                    gap: 20px;
+                }
+
+                .info-group {
+                    background: #f7fafd;
+                    border-radius: 28px;
+                    padding: 20px 24px;
+                    margin-bottom: 28px;
+                    border: 1px solid #e2ecf5;
+                }
+
+                .display-row {
+                    margin-bottom: 22px;
+                }
+
+                .display-row label {
+                    font-weight: 600;
+                    color: #2c4a6e;
+                    display: block;
+                    margin-bottom: 8px;
+                    font-size: 0.85rem;
+                    letter-spacing: 0.3px;
+                }
+
+                #settingsDisplayName {
+                    width: 100%;
+                    padding: 14px 20px;
+                    border-radius: 60px;
+                    border: 1.5px solid #cddef0;
+                    font-size: 1rem;
+                    background: white;
+                    transition: 0.2s;
+                }
+                #settingsDisplayName:focus {
+                    border-color: #2e9afe;
+                    outline: none;
+                    box-shadow: 0 0 0 3px rgba(46,154,254,0.2);
+                }
+
+                /* Unchangable Rank (greyed out) */
+                .rank-static {
+                    background: #eef3fa;
+                    border-radius: 60px;
+                    padding: 14px 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    border: 1px solid #d8e3f0;
+                }
+                .rank-label {
+                    font-weight: 600;
+                    color: #3b5c7c;
+                }
+                .rank-value {
+                    font-weight: 500;
+                    color: #6c86a3;
+                    background: #ffffffc9;
+                    padding: 4px 16px;
+                    border-radius: 40px;
+                    font-size: 0.95rem;
+                }
+
+                /* Background link changer */
+                .bg-link-group {
+                    margin-top: 20px;
+                    background: #f7fafd;
+                    border-radius: 28px;
+                    padding: 20px 24px;
+                    border: 1px solid #e2ecf5;
+                }
+                .bg-link-group label {
+                    font-weight: 600;
+                    color: #2c4a6e;
+                    display: block;
+                    margin-bottom: 10px;
+                }
+                .bg-input-wrapper {
+                    display: flex;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                }
+                #bgImageUrl {
+                    flex: 3;
+                    padding: 12px 18px;
+                    border-radius: 60px;
+                    border: 1.5px solid #cddef0;
+                }
+                .apply-bg-btn {
+                    background: #2e9afe;
+                    border: none;
+                    color: white;
+                    padding: 0 26px;
+                    border-radius: 60px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: 0.2s;
+                }
+                .apply-bg-btn:hover { background: #1a7fd1; }
+
+                /* EXP BAR SECTION (bottom left) */
+                .exp-section {
+                    margin-top: 28px;
+                    background: #f2f6fc;
+                    border-radius: 28px;
+                    padding: 18px 20px;
+                    border: 1px solid #dce6f2;
+                }
+                .level-text {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 8px;
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: #2c5a7a;
+                }
+                .exp-bar-bg {
+                    background-color: #d9e2ef;
+                    border-radius: 60px;
+                    height: 14px;
+                    overflow: hidden;
+                    box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+                }
+                .exp-fill {
+                    width: 0%;
+                    height: 100%;
+                    background: linear-gradient(90deg, #5fa7f0, #2e9afe);
+                    border-radius: 60px;
+                    transition: width 0.7s cubic-bezier(0.22, 0.97, 0.36, 1.02);
+                    position: relative;
+                    box-shadow: 0 0 6px rgba(46,154,254,0.5);
+                }
+                /* small animation pulse on update */
+                .exp-fill.animate-pulse {
+                    animation: glowPulse 0.5s ease-out;
+                }
+                @keyframes glowPulse {
+                    0% { filter: brightness(1); box-shadow: 0 0 0 0 #2e9afe; }
+                    50% { filter: brightness(1.2); box-shadow: 0 0 8px 2px #2e9afe; }
+                    100% { filter: brightness(1); box-shadow: 0 0 0 0 #2e9afe; }
+                }
+                .exp-details {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 10px;
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    color: #46688a;
+                }
+
+                /* RIGHT SIDE: huge profile image with hover upload icon */
+                .avatar-huge-container {
+                    position: relative;
+                    width: 200px;
+                    height: 200px;
+                    border-radius: 50%;
+                    margin: 0 auto;
+                    cursor: pointer;
+                    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+                    transition: transform 0.2s;
+                }
+                .avatar-huge-container:hover {
+                    transform: scale(1.02);
+                }
+                #avatarPreviewBig {
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    border: 4px solid white;
+                    background: #cbdbe2;
+                    transition: 0.2s;
+                }
+                /* overlay icon on hover */
+                .avatar-overlay-icon {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                    color: white;
+                    font-size: 3rem;
+                    backdrop-filter: blur(2px);
+                    cursor: pointer;
+                }
+                .avatar-huge-container:hover .avatar-overlay-icon {
+                    opacity: 1;
+                }
+                /* hidden file input */
+                #hiddenAvatarInput {
+                    display: none;
+                }
+
+                /* Sillyness counter (centered under avatar, based on middle) */
+                .sillyness-block {
+                    text-align: center;
+                    margin-top: 8px;
+                    background: #eef3fc;
+                    padding: 12px 20px;
+                    border-radius: 60px;
+                    width: 100%;
+                    max-width: 200px;
+                    font-weight: bold;
+                    font-size: 1.2rem;
+                    box-shadow: inset 0 1px 2px #00000010, 0 4px 8px rgba(0,0,0,0.05);
+                }
+                .sillyness-block i {
+                    color: #f5b042;
+                    margin-right: 8px;
+                }
+                .sillyness-number {
+                    font-size: 1.6rem;
+                    font-weight: 800;
+                    color: #d9792e;
+                }
+
+                /* update button & logout */
+                .settings-btn {
+                    background: #1f7ed3;
+                    color: white;
+                    border: none;
+                    padding: 12px;
+                    width: 100%;
+                    border-radius: 60px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    margin-top: 16px;
+                    font-size: 1rem;
+                }
+                .logout-row {
+                    margin-top: 18px;
+                    text-align: center;
+                }
+                #logoutBtnSettings {
+                    background: none;
+                    border: none;
+                    color: #b33;
+                    font-weight: 500;
+                    cursor: pointer;
+                    font-size: 0.9rem;
+                }
+                hr {
+                    margin: 12px 0;
+                    border-color: #e1eaf1;
+                }
+
+                /* make responsive */
+                @media (max-width: 680px) {
+                    .settings-dashboard {
+                        flex-direction: column;
+                    }
+                    .settings-right {
+                        order: -1;
+                        margin-bottom: 10px;
+                    }
+                    .avatar-huge-container {
+                        width: 150px;
+                        height: 150px;
+                    }
                 }
 
                 .auth-tabs {
@@ -535,6 +883,17 @@
                     border-radius: 60px;
                     font-weight: bold;
                     cursor: pointer;
+                }
+                .auth-btn:disabled,
+                .settings-btn:disabled, {
+                    background: #464343;
+                    color: white;
+                    border: none;
+                    padding: 12px;
+                    width: 100%;
+                    border-radius: 60px;
+                    font-weight: bold;
+                    cursor:not-allowed;
                 }
 
                 .close-modal {
@@ -609,6 +968,24 @@
                 .small-note i {
                     color: #6b7f99;
                 }
+                
+                /*Sub Functions CSS*/
+                .rainbow-text {
+                    background-image: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    color: transparent;
+                    background-size: 400% 100%;
+                    animation: rainbow_animation 6s ease-in-out infinite;
+                }
+                @keyframes rainbow_animation {
+                    0%, 100% {
+                        background-position: 0 0; 
+                    }
+                    50% {
+                        background-position: 100% 0;
+                    }
+                }
 
             </style>
         </head>
@@ -633,54 +1010,116 @@
                     </div>
                 </div>
             </div>
-            <div class="overlay" id="settingsOverlay">
+            <div id="settingsOverlay" class="overlay">
                 <div class="settings-modal">
-                    <button class="close-modal" id="closeSettingsBtn">&times;</button>
-                    <h3 style="margin-bottom: 20px;"><i class="fas fa-cog"></i> Profile settings</h3>
-                    <div class="form-group"><input type="text" id="settingsDisplayName" placeholder="New display name"></div>
-                    <div class="form-group"><label>Profile picture (click to upload)</label><input type="file" id="settingsAvatar" accept="image/*" style="margin-top:8px;"></div>
-                    <img id="avatarPreview" class="profile-preview" src="https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg" alt="">
-                    <button class="settings-btn" id="saveSettingsBtn"><i class="fas fa-save"></i> Update profile</button>
-                    <div style="margin-top:15px; text-align:center"><button id="logoutBtnSettings" style="background:none; border:none; color:#b33;">Logout</button></div>
-                </div>
+                        <button class="close-modal" id="closeSettingsBtnModal">&times;</button>
+                        <h3 style="margin-bottom: 20px; display: flex; gap: 12px; align-items: center;"><i class="fas fa-cog"></i> Profile settings</h3>
+                        <div class="settings-dashboard">
+                            <div class="settings-left">
+                                <div class="info-group">
+                                    <div class="display-row">
+                                        <label><i class="fas fa-user-edit"></i> Display name</label>
+                                        <input type="text" id="settingsDisplayName" placeholder="Your nickname">
+                                    </div>
+                                    <div class="rank-static">
+                                        <span class="rank-label"><i class="fas fa-medal"></i> Rank</span>
+                                        <span class="rank-value" id="rankValueDisplay">User</span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-link-group">
+                                    <label><i class="fas fa-image"></i> Background(URL)</label>
+                                    <div class="bg-input-wrapper">
+                                        <input type="text" id="bgImageUrl" placeholder="https://example.com/beautiful-sky.jpg">
+                                        <button id="applyBgBtn" class="apply-bg-btn"><i class="fas fa-sync-alt"></i> Apply</button>
+                                    </div>
+                                    <small style="color:#6c8fb0; margin-top: 8px; display:block;"><i class="fas fa-link"></i> Changes background image of the whole page</small>
+                                </div>
+
+                                <!-- EXP BAR (bottom left) -->
+                                <div class="exp-section">
+                                    <div class="level-text">
+                                        <span><i class="fas fa-chart-line"></i> Level <span id="currentLevel">1</span></span>
+                                        <span id="expFraction">0 / 100 XP</span>
+                                    </div>
+                                    <div class="exp-bar-bg">
+                                        <div class="exp-fill" id="expFillBar" style="width: 0%;"></div>
+                                    </div>
+                                    <div class="exp-details">
+                                        <span>✨ next level: +100 XP</span>
+                                        <span><i class="fas fa-star"></i> rank progress</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="settings-right">
+                                <!-- Big profile image with hover upload -->
+                                <div class="avatar-huge-container" id="avatarClickZone">
+                                    <img id="avatarPreviewBig" class="profile-preview-big" src="https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg" alt="avatar">
+                                    <div class="avatar-overlay-icon">
+                                            <i class="fas fa-camera"></i>
+                                    </div>
+                                </div>
+                                <!-- hidden file input -->
+                                <input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none;">
+
+                                <!-- Sillyness counter (below avatar, centered relative to avatar mid) -->
+                                <div class="sillyness-block">
+                                    <p>Sillyness</p>
+                                    <div class="sillyness-number" id="sillynessValue">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="settings-btn" id="saveSettingsBtn"><i class="fas fa-save"></i> Update profile</button>
+                        <div class="logout-row">
+                            <button id="logoutBtnSettings" style="background:none; border:none; color:#b33;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </div>
+                    </div>
             </div>
-            <!-- image enlarge overlay -->
             <div class="enlarge-overlay" id="enlargeOverlay"><span class="close-enlarge" id="closeEnlarge">&times;</span><img class="enlarged-img" id="enlargedImg" src="" alt=""></div>
 
             <!-- MAIN FORUM -->
             <div class="forum-container">
                 <div class="forum-header">
-                    <i class="fas fa-comments" style="color:#2e9afe;"></i>
-                    <h2>The Last CS <span style="font-weight:400;">/ forum</span></h2>
-                    <div id="greetingContainer"></div>
-                    <button id="settingsToggleBtn" style="background:none; border:none; font-size:1.6rem; margin-left:6px;"><i class="fas fa-sliders-h"></i></button>
-                    <button id="openLoginBtn" style="background:#edf2f9; border:none; border-radius:40px; padding:8px 18px;"><i class="far fa-user-circle"></i> Login</button>
-                </div>
-
+                    <h2>
+                        <i class="fas fa-comments" style="color:#2e9afe;"></i>
+                        <span style="font-weight:400;">The Last CS</span>
+                    </h2>
+                    <div class="user-container">                    
+                        <div id="greetingContainer"></div>
+                        <button id="settingsToggleBtn" style="background:none; border:none; font-size:1.6rem; margin-left:6px;"><i class="fas fa-sliders-h"></i></button>
+                        <button id="openLoginBtn" style="background:#edf2f9; border:none; border-radius:40px; padding:8px 18px;">
+                            <i class="far fa-user-circle"></i>Login
+                        </button>
+                    </div>
+                </div>               
                 <div class="new-thread-card">
                     <h3><i class="fas fa-pencil-alt"></i> Start a new discussion</h3>
-                    <div class="format-bar">
-                        <button class="format-btn" id="boldBtn"><i class="fas fa-bold"></i></button>
-                        <button class="format-btn" id="italicBtn"><i class="fas fa-italic"></i></button>
-                        <button class="format-btn" id="colorBtn"><i class="fas fa-palette"></i> color</button>
-                        <input type="color" id="colorPicker" value="#2e9afe">
+                    <div class="input-group">
+                        <textarea id="messageInput" rows="3" placeholder="Write your comment or question... (drag & drop images)"></textarea>
+                        <div class="input-button-container">
+                            <label for="imageInput" class="custom-file-label"><i class="fas fa-image"></i></label>
+                            <input type="file" id="imageInput" accept="image/*" multiple style="display:none;">
+                            <button class="format-btn" id="boldBtn"><i class="fas fa-bold"></i></button>
+                            <button class="format-btn" id="italicBtn"><i class="fas fa-italic"></i></button>
+                            <button class="format-btn" id="colorBtn">
+                                <i class="fas fa-palette"></i>
+                                <input type="color" id="colorPicker" value="#2e9afe">
+                            </button>
+
+                        </div>
                     </div>
-                    <div class="input-group"><textarea id="messageInput" rows="3" placeholder="Write your comment or question... (drag & drop images)"></textarea></div>
                     <div class="preview-area" id="globalPreview"></div>
                     <div class="file-attach-row">
-                        <label for="imageInput" class="custom-file-label"><i class="fas fa-image"></i> Attach images</label>
-                        <input type="file" id="imageInput" accept="image/*" multiple style="display:none;">
-                        <button class="send-main-btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Post comment</button>
+                          <button class="send-main-btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Post comment</button>
                     </div>
-                    <div class="small-note"><i class="far fa-lightbulb"></i> **bold** *italic* <span style="color:#c6362e;">colors</span> and drag-drop images</div>
                 </div>
-
                 <div class="thread-list" id="chat"></div>
                 <div class="load-more-btn" id="loadMoreContainer" style="display: none;"><button id="loadMoreBtn"><i class="fas fa-chevron-down"></i> Show more posts</button></div>
 
-                <div class="forum-footer"><span><i class="far fa-comment-dots"></i> real‑time updates</span><span class="live-badge"><span class="live-dot"></span> live</span></div>
+                <div class="forum-footer"><span><i class="far fa-comment-dots"></i> Made By Rinrin</span><span class="live-badge"><span class="live-dot"></span> live</span></div>
             </div>
-
             <script>
                 (function() {
                     // -------------------- CONFIG --------------------
@@ -690,10 +1129,8 @@
 
                     // -------------------- DOM elements --------------------
                     const chatDiv = document.getElementById('chat');
-                    const overlay = document.getElementById('authOverlay');
-                    const settingsOverlay = document.getElementById('settingsOverlay');
+                    const AuthOverlay = document.getElementById('authOverlay');
                     const openLoginBtn = document.getElementById('openLoginBtn');
-                    const closeModalBtn = document.getElementById('closeModalBtn');
                     const loginTab = document.getElementById('loginTab');
                     const signupTab = document.getElementById('signupTab');
                     const loginFormDiv = document.getElementById('loginForm');
@@ -704,10 +1141,9 @@
                     const signupBtn = document.getElementById('signupBtn');
                     const settingsToggleBtn = document.getElementById('settingsToggleBtn');
                     const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-                    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
                     const logoutBtnSettings = document.getElementById('logoutBtnSettings');
                     const settingsAvatar = document.getElementById('settingsAvatar');
-                    const avatarPreview = document.getElementById('avatarPreview');
+                    const avatarPreview = document.getElementById('avatarPreviewBig');
                     const settingsDisplayName = document.getElementById('settingsDisplayName');
                     const greetingContainer = document.getElementById('greetingContainer');
 
@@ -722,7 +1158,16 @@
                     const enlargeOverlay = document.getElementById('enlargeOverlay');
                     const enlargedImg = document.getElementById('enlargedImg');
                     const closeEnlarge = document.getElementById('closeEnlarge');
-
+                    const closeAuthModalBtn = document.getElementById('closeModalBtn');
+                    
+                    const settingsOverlay = document.getElementById('settingsOverlay');
+                    const openButton = document.getElementById('settingsToggleBtn');
+                    const closeModalBtn = document.getElementById('closeSettingsBtnModal');
+                    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+                    const logoutBtn = document.getElementById('logoutBtnSettings');
+                    
+                    const avatarZone = document.getElementById('avatarClickZone');
+                    const hiddenFileInput = document.getElementById('hiddenAvatarInput');
                     // -------------------- State --------------------
                     let selectedFiles = [];
                     let currentUser = null;
@@ -731,8 +1176,9 @@
                     let allMessages = [];
                     let topLevelMessages = [];
                     let PAGE_SIZE = 10;
-
-
+                    const MAX_SIZE = 10 * 1024 * 1024;
+                    const EXP_PER_LEVEL = 100;
+                    
                     // Helper
                     function timeAgo(dateStr) {
                         if (dateStr == null) {
@@ -758,16 +1204,10 @@
 
                     // ---------- auth & profile ----------
                     async function refreshUser() {
-                        const {
-                            data: {
-                                user
-                            }
-                        } = await server.auth.getUser();
+                        const {data: {user}} = await server.auth.getUser();
                         currentUser = user;
                         if (user) {
-                            const {
-                                data: profile
-                            } = await server.from('user_profile').select('*').eq('id', user.id).single();
+                            const {data: profile} = await server.from('user_profile').select('*').eq('id', user.id).single();
                             currentProfile = profile;
                             updateGreeting();
                         } else {
@@ -794,20 +1234,15 @@
                         const userId = data.user.id;
                         await server.from('user_profile').insert({id: userId,display_name: displayName});
                         alert('Signup successful! Check email if confirmation required.');
-                        overlay.classList.remove('active');
+                        AuthOverlay.classList.remove('active');
                         refreshUser();
                     }
                     async function login() {
                         const email = document.getElementById('login-email').value;
                         const password = document.getElementById('login-password').value;
-                        const {
-                            error
-                        } = await server.auth.signInWithPassword({
-                            email,
-                            password
-                        });
+                        const {error} = await server.auth.signInWithPassword({email,password});
                         if (error) return alert(error.message);
-                        overlay.classList.remove('active');
+                        AuthOverlay.classList.remove('active');
                         refreshUser();
                     }
                     async function logout() {
@@ -815,43 +1250,7 @@
                         settingsOverlay.classList.remove('active');
                         refreshUser();
                         
-                    }
-
-                    // settings: update profile & avatar
-                    settingsAvatar.addEventListener('change', function(e) {
-                        const file = e.target.files[0];
-                        if (file) {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                                avatarPreview.src = ev.target.result;
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    });
-                    saveSettingsBtn.addEventListener('click', async () => {
-                        if (!currentUser) return alert('login first');
-                        const newName = settingsDisplayName.value.trim();
-                        const file = settingsAvatar.files[0];
-                        let imageUrl = currentProfile.image_url ? currentProfile.image_url : "";
-                        if (file) {
-                            imageUrl = await CompressProfileImages(file);
-                        }
-                        const updates = {};
-                        if (newName) updates.display_name = newName;
-                        if (imageUrl) updates.image_url = imageUrl;
-                        if (Object.keys(updates).length === 0) return;
-                        const {error} = await server.from('user_profile').update(updates).eq('id', currentUser.id);
-                        if (error) {
-                            alert(error.message);
-                        }
-                        else {
-                            alert('profile updated');
-                            settingsOverlay.classList.remove('active');
-                            refreshUser();
-                        }
-                    });
-                    
-                    
+                    }                              
                     async function deleteMessage(messageId) {
                         if (!confirm('Delete message?')) return;
                         await server.from('messages').delete().eq('id', messageId);
@@ -897,25 +1296,41 @@
                     async function CompressMessageImage(files, userId, messageId) {
                         const uploadedUrls = [];
                         for (const file of files) {
+                            if(!file){return;}
+                            if (file.size > MAX_SIZE) {
+                                alert('File must be under 10MB')
+                                return
+                            }
                             try {
-                                const compressedBlob = await new Promise((resolve, reject) => {
-                                    new Compressor(file, {
-                                        quality: 0.5,
-                                        maxWidth: 1280,
-                                        maxHeight: 1280,
-                                        mimeType:"auto",
-                                        success: resolve,
-                                        error: reject,
+                                let image = file;
+                                if(file.type !== 'image/gif'){
+                                    image = await new Promise((resolve, reject) => {
+                                        new Compressor(image, {
+                                            quality: 0.6,
+                                            maxWidth: 1280,
+                                            maxHeight: 1280,
+                                            mimeType:"image/webp",
+                                            success: resolve,
+                                            error: reject,
+                                        });
+                                        if(reject){
+                                            throw new Error("Image Compression Failed! If this repeats. Message Rinrin.")
+                                        }
                                     });
-                                });
-                                const path = `images/${userId}/${messageId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
-                                const {error: uploadErr} = await server.storage.from('Images').upload(path, compressedBlob);
-                                if (!uploadErr) {const {data: pub} = server.storage.from('Images').getPublicUrl(path);
+                                }
+                                const path = `image/${userId}/${messageId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
+                                
+                                const formData = new FormData()
+                                formData.append('file', file)
+                                formData.append('path', path)
+                                const { data: pub, error: uploadErr } = await server.functions.invoke('upload-images', { body: formData })
+                                if (!uploadErr) {
                                     uploadedUrls.push(pub.publicUrl);
                                 } else {
                                     console.error('upload error', uploadErr);
                                 }
-                            } catch (err) {
+                            } 
+                            catch (err) {
                                 console.error('compression failed', err);
                             }
                         }
@@ -924,49 +1339,60 @@
                     async function CompressProfileImages(file) {
                         let pubUrl ="";
                         if(!file){return;}
+                        if (file.size > MAX_SIZE) {
+                            alert('File must be under 10MB')
+                            return
+                        }
                         try {
-                                const compressedBlob = await new Promise((resolve, reject) => {
-                                    new Compressor(file, {
-                                        quality: 0.4,
+                            let image = file;
+                            if(file.type !== 'image/gif'){
+                                image = await new Promise((resolve, reject) => {
+                                    new Compressor(image, {
+                                        quality: 0.6,
                                         maxWidth: 1280,
                                         maxHeight: 1280,
-                                        mimeType:"auto",
+                                        mimeType:"image/webp",
                                         success: resolve,
                                         error: reject,
                                     });
+                                    if(reject){
+                                        throw new Error("Image Compression Failed! If this repeats. Message Rinrin.")
+                                    }
                                 });
-                                const ext = file.name.split('.').pop();
-                                const path = `avatars/${currentUser.id}/${Date.now()}.${ext}`;
-                                const {error: uploadErr} = await server.storage.from('Images').upload(path, compressedBlob);
-                                if (!uploadErr) {const {data: pub} = server.storage.from('Images').getPublicUrl(path);
-                                    pubUrl = pub.publicUrl;
-                                } else {
-                                    console.error('upload error', uploadErr);
-                                }
-                            } 
-                        catch (err) {
-                                console.error('compression failed', err);
                             }
+                            
+                            const path = `avatars/${currentUser.id}/${Date.now()}`;
+                            const formData = new FormData()
+                            formData.append('file', image)
+                            formData.append('path', path)
+                            const { data, error: uploadErr } = await server.functions.invoke('upload-images', { body: formData })
+
+                            if (!uploadErr){
+                                pubUrl = data.publicUrl;
+                            }else{
+                                console.error('upload error', uploadErr);
+                            }
+                        }catch (err){
+                            console.error('compression failed', err);
+                        }
                         return pubUrl;
-                    }
-                    
+                    }                
                     async function postMessage(content, files, parent_id = null) {
                         if (!content && (!files || files.length === 0)) return alert('empty post');
                         if (!currentUser) return alert('You must be logged in');
                         sendBtn.disabled = true;
                         sendBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> posting...';
-
-                        // Insert message
-                        const {data: msg,error} = await server.from('messages').insert({content,parent_id,sender: currentUser.id}).select('id').single();
-                        if (error) {
-                            alert('error');
-                            sendBtn.disabled = false;
-                            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post comment';
-                            return;
-                        }
-
-                        // Upload compressed images
-                        if (files && files.length) {
+                        
+                        try{
+                            const {data: msg,error} = await server.from('messages').insert({content,parent_id,sender: currentUser.id}).select('id').single();
+                            if (error) {
+                                alert('error');
+                                sendBtn.disabled = false;
+                                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post comment';
+                                throw new Error("Message upload failed");
+                                return;
+                            }
+                            if (files && files.length) {
                             const urls = await CompressMessageImage(files, currentUser.id, msg.id);
                             for (const url of urls) {
                                 await server.from('message_images').insert({
@@ -975,72 +1401,80 @@
                                 });
                             }
                         }
+                            await new Promise(r => setTimeout(r, 1000));
+                            sendBtn.disabled = false;
+                            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post comment';
+                            messageInput.value = '';
+                            selectedFiles = [];
+                            updatePreview();
+                            imageInput.value = '';
 
-                        await new Promise(r => setTimeout(r, 1000));
-                        sendBtn.disabled = false;
-                        sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Post comment';
-                        messageInput.value = '';
-                        selectedFiles = [];
-                        updatePreview();
-                        imageInput.value = '';
-
-                        // Refresh: reload top-level paginated
-                        renderTopLevel();
+                            // Refresh: reload top-level paginated
+                            renderTopLevel();
+                            loadMessages();
+                        }catch(err){
+                            console.log("Failed:", err)
+                        }
                     }
-
                     async function loadMessages() {
-                        const {data,error} = await server.from('messages').select(`*, user_profile(display_name, image_url), message_images(image_url)`).order('created_at', {ascending: false}).limit(100);
-                        
-                        if (error) return console.error(error);
-                        allMessages = data;
+                    const { data, error } = await server.functions.invoke('fetch-compressed');
+                    if (error) return console.error(error);
+                    allMessages = data;
 
-                        const map = {};
-                        allMessages.forEach(m => {
-                            m.children = [];
-                            map[m.id] = m;
-                        });
-                        allMessages.forEach(m => {
-                            if (m.parent_id && map[m.parent_id]) map[m.parent_id].children.push(m);
-                        });
-                        topLevelMessages = allMessages.filter(m => !m.parent_id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                        renderTopLevel();
+                    const map = {};
+                    allMessages.forEach(m => {
+                        m.children = [];
+                        map[m.id] = m;
+                    });
+                    allMessages.forEach(m => {
+                        if (m.parent_id && map[m.parent_id]) map[m.parent_id].children.push(m);
+                    });
+                    topLevelMessages = allMessages
+                        .filter(m => !m.parent_id)
+                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    renderTopLevel();
                     }
                     function renderTopLevel() {
-                        chatDiv.innerHTML = '';
-                        const toShow = topLevelMessages.slice(0, PAGE_SIZE);
-                        if (toShow.length === 0) {
-                            chatDiv.innerHTML = '<div class="empty-threads">No discussions yet.</div>';
-                        } else {
-                            toShow.forEach(msg => {
-                                chatDiv.appendChild(createMessageElement(msg, false));
-                                if (msg.children.length) {
-                                    const replyDiv = document.createElement('div');
-                                    replyDiv.className = 'replies-section';
-                                    chatDiv.appendChild(replyDiv);
-                                    renderReplies(msg.children, replyDiv);
-                                }
-                            });
-                        }
-                        // show more button
-                        const loadMoreDiv = document.getElementById('loadMoreContainer');
-                        if (topLevelMessages.length > PAGE_SIZE) {
-                            loadMoreDiv.style.display = 'block';
-                        } else {
-                            loadMoreDiv.style.display = 'none';
-                        }
-                    }
-                    function renderReplies(children, container) {
-                        children.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)).forEach(r => {
-                            container.appendChild(createMessageElement(r, true));
-                            if (r.children.length) {
-                                const sub = document.createElement('div');
-                                sub.className = 'replies-section';
-                                container.appendChild(sub);
-                                renderReplies(r.children, sub);
+                    chatDiv.innerHTML = '';
+                    const toShow = topLevelMessages.slice(0, PAGE_SIZE);
+
+                    if (toShow.length === 0) {
+                        chatDiv.innerHTML = '<div class="empty-threads">No discussions yet.</div>';
+                    } else {
+                        toShow.forEach(msg => {
+                            chatDiv.appendChild(createMessageElement(msg, false));
+                            if (msg.children.length) {
+                                const replyDiv = document.createElement('div');
+                                replyDiv.className = 'replies-section';
+                                chatDiv.appendChild(replyDiv);
+                                renderReplies(msg.children, replyDiv);
                             }
                         });
                     }
-                    function createMessageElement(msg, isReply, depth = 0) {
+
+                    const loadMoreDiv = document.getElementById('loadMoreContainer');
+                    loadMoreDiv.style.display = topLevelMessages.length > PAGE_SIZE ? 'flex' : 'none';
+                    }
+                    function renderReplies(children, container, depth = 0) {
+                    children
+                        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+                        .forEach(r => {
+                            container.appendChild(createMessageElement(r, true));
+                            if (r.children.length) {
+                                if (depth < 1) {
+                                    // Level 0 → 1: create a nested replies-section (2nd level indent)
+                                    const sub = document.createElement('div');
+                                    sub.className = 'replies-section';
+                                    container.appendChild(sub);
+                                    renderReplies(r.children, sub, depth + 1);
+                                } else {
+                                    // Level 1+ : flatten all deeper replies into the current container
+                                    renderReplies(r.children, container, depth);
+                                }
+                            }
+                        });
+                    }
+                    function createMessageElement(msg, isReply) {
                         const card = document.createElement('div');
                         card.className = isReply ? 'reply-card' : 'comment-card';
                         card.dataset.messageId = msg.id;
@@ -1049,40 +1483,36 @@
                             display_name: 'Guest',
                             image_url: 'https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg'
                         };
-                        const displayName = profile.display_name;
-                        const avatarUrl = profile.image_url;
+
                         const timeHtml = timeAgo(msg.created_at);
 
-                        // Find parent author if this is a reply
                         let parentAuthorHtml = '';
                         if (isReply && msg.parent_id) {
-                            const parentMsg = allMessages.filter(m => m.id == msg.parent_id)
-                            if (parentMsg && parentMsg[0].user_profile) {
-                                parentAuthorHtml = `<span class="reply-to-badge"><i class="fas fa-reply"></i> ${parentMsg[0].user_profile.display_name || 'member'}</span>`;
+                            const parentMsg = allMessages.find(m => m.id == msg.parent_id);
+                            if (parentMsg && parentMsg.user_profile) {
+                                const parentName = parentMsg.user_profile.display_name || 'member';
+                                parentAuthorHtml = `<span class="reply-to-badge"><i class="fas fa-reply"></i> ${parentName}</span>`;
                             }
                         }
 
-                        const headerHtml = `
-                    <div class="comment-header">
-                        <div class="comment-avatar"><img src="${avatarUrl}" alt=""></div>
-                        <span class="comment-author">${displayName}</span>
-                        ${parentAuthorHtml}
-                        <span class="comment-id-badge">#${msg.id.slice(0,4)}</span>
-                        <span class="comment-time"><i class="far fa-clock"></i> ${timeHtml}</span>
-                    </div>`;
+                        card.innerHTML = `
+                            <div class="comment-header">
+                                <div class="comment-avatar"><img src="${profile.image_url}" alt="" loading="lazy"></div>
+                                <span class="comment-author">${profile.display_name}</span>
+                                ${parentAuthorHtml}
+                            ${profile.title ? `<span class="comment-id-badge">${profile.title} </span>` : ""}
+                                <span class="comment-time"><i class="far fa-clock"></i> ${timeHtml}</span>
+                            </div>
+                            <div class="comment-body">
+                                <div class="comment-content">${TextFormatting(msg.content || '')}</div>
+                            </div>`;
 
-                        // Content with enhanced HTML (links, newlines, youtube)
-                        const contentHtml = TextFormatting(msg.content || '');
-
-                        const bodyHtml = `<div class="comment-body"><div class="comment-content">${contentHtml}</div></div>`;
-                        card.innerHTML = headerHtml + bodyHtml;
-
-                        // Images
                         if (msg.message_images.length) {
                             const imgDiv = document.createElement('div');
                             imgDiv.className = 'comment-image';
                             msg.message_images.forEach(img => {
                                 const im = document.createElement('img');
+                                im.loading = 'lazy';
                                 im.src = img.image_url;
                                 im.addEventListener('click', () => {
                                     enlargedImg.src = img.image_url;
@@ -1093,28 +1523,43 @@
                             card.querySelector('.comment-body').appendChild(imgDiv);
                         }
 
-                        if (currentUser && msg.sender === currentUser.id) {
-                            const menuDiv = document.createElement('div');
-                            menuDiv.className = 'comment-menu';
-                            menuDiv.innerHTML = `<button class="menu-trigger"><i class="fas fa-ellipsis-v"></i></button><div class="menu-dropdown"><button class="menu-item edit-item"><i class="fas fa-edit"></i> Edit</button><button class="menu-item delete-item"><i class="fas fa-trash-alt"></i> Delete</button></div>`;
-                            card.appendChild(menuDiv);
-                            const trigger = menuDiv.querySelector('.menu-trigger');
-                            const dropdown = menuDiv.querySelector('.menu-dropdown');
-                            trigger.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                dropdown.classList.toggle('show');
-                            });
-                            dropdown.querySelector('.edit-item').addEventListener('click', () => {
-                                editMessage(msg.id, msg.content);
-                                dropdown.classList.remove('show');
-                            });
-                            dropdown.querySelector('.delete-item').addEventListener('click', () => {
-                                deleteMessage(msg.id);
-                                dropdown.classList.remove('show');
-                            });
+                        if(currentProfile && currentProfile.rank === "Moderator"){
+                            appendAdditionalMenu(card, msg);
+                        }else if(currentUser && msg.sender === currentUser.id){
+                            appendAdditionalMenu(card, msg);
                         }
-                        // Reply toggle
+
+                        appendReplyBox(card, msg);
+                        return card;
+                    }
+                    function appendAdditionalMenu(card, msg) {
+                    const menuDiv = document.createElement('div');
+                    menuDiv.className = 'comment-menu'; 
+                    menuDiv.innerHTML = `
+                        <button class="menu-trigger"><i class="fas fa-ellipsis-v"></i></button>
+                        <div class="menu-dropdown">
+                            <button class="menu-item edit-item"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="menu-item delete-item"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>`;
+                    card.appendChild(menuDiv);
+
+                    const dropdown = menuDiv.querySelector('.menu-dropdown');
+                    menuDiv.querySelector('.menu-trigger').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dropdown.classList.toggle('show');
+                    });
+                    menuDiv.querySelector('.edit-item').addEventListener('click', () => {
+                        editMessage(msg.id, msg.content);
+                        dropdown.classList.remove('show');
+                    });
+                    menuDiv.querySelector('.delete-item').addEventListener('click', () => {
+                        deleteMessage(msg.id);
+                        dropdown.classList.remove('show');
+                    });
+                    }                 
+                    function appendReplyBox(card, msg) {
                         const replyBoxId = `replyBox-${msg.id}`;
+
                         const actionsDiv = document.createElement('div');
                         actionsDiv.className = 'comment-actions';
                         actionsDiv.innerHTML = `<button class="reply-toggle-btn" data-target="${replyBoxId}"><i class="fas fa-reply"></i> Reply</button>`;
@@ -1123,34 +1568,57 @@
                         const replyBox = document.createElement('div');
                         replyBox.className = 'reply-box-nested';
                         replyBox.id = replyBoxId;
+                        replyBox.style.display = 'none';
                         replyBox.innerHTML = `
-                    <textarea rows="2" placeholder="Write a reply..."></textarea>
-                    <div><label for="file-${msg.id}" class="mini-file-label" style="background:#eef2f6; padding:6px 16px; border-radius:40px; display:inline-block; margin:8px 0;"><i class="fas fa-paperclip"></i> image</label>
-                    <input type="file" id="file-${msg.id}" class="reply-image-hidden" accept="image/*" style="display:none;" multiple></div>
-                    <button class="send-reply-mini" data-parent="${msg.id}"><i class="fas fa-reply"></i> Post reply</button>`;
+                            <div class="format-bar">
+                                <button class="format-btn" data-action="bold"><i class="fas fa-bold"></i></button>
+                                <button class="format-btn" data-action="italic"><i class="fas fa-italic"></i></button>
+                                <button class="format-btn" data-action="color"><i class="fas fa-palette"></i> color</button>
+                                <input type="color" class="reply-color-picker" value="#2e9afe" style="display:none;">
+                            </div>
+                            <div class="input-group">
+                                <textarea rows="3" placeholder="Write a reply... (drag & drop images)"></textarea>
+                            </div>
+                            <div class="preview-area"></div>
+                            <div class="file-attach-row">
+                                <label for="file-${msg.id}" class="custom-file-label"><i class="fas fa-image"></i> Attach images</label>
+                                <input type="file" id="file-${msg.id}" accept="image/*" multiple style="display:none;">
+                                <button class="send-main-btn send-reply-mini" data-parent="${msg.id}"><i class="fas fa-paper-plane"></i> Post reply</button>
+                            </div>
+                            <div class="small-note"><i class="far fa-lightbulb"></i> **bold** *italic* <span style="color:#c6362e;">colors</span> and drag-drop images</div>`;
                         card.appendChild(replyBox);
 
+                        // Toggle reply box visibility
                         card.querySelector('.reply-toggle-btn').addEventListener('click', () => {
                             replyBox.style.display = replyBox.style.display === 'none' ? 'block' : 'none';
                         });
 
-                        card.querySelector('.send-reply-mini').addEventListener('click', async () => {
-                            const ta = replyBox.querySelector('textarea');
+                        // Format bar buttons
+                        const ta = replyBox.querySelector('textarea');
+                        const colorPicker = replyBox.querySelector('.reply-color-picker');
+                        replyBox.querySelector('[data-action="bold"]').addEventListener('click', () => applyFormat(ta, 'bold'));
+                        replyBox.querySelector('[data-action="italic"]').addEventListener('click', () => applyFormat(ta, 'italic'));
+                        replyBox.querySelector('[data-action="color"]').addEventListener('click', () => colorPicker.click());
+                        colorPicker.addEventListener('input', () => applyFormat(ta, 'color', colorPicker.value));
+
+                        // Send reply
+                        replyBox.querySelector('.send-reply-mini').addEventListener('click', async () => {
+                            replyBox.querySelector('.send-reply-mini').disabled = true;
                             const content = ta.value.trim();
                             const fileInput = replyBox.querySelector('input[type="file"]');
                             const files = fileInput.files;
-                            if (!content && (!files || files.length === 0)) return alert('empty');
-                            await postMessage(content, files ? Array.from(files) : null, msg.id);
+
+                            if (!content && files.length === 0) return alert('empty');
+
+                            await postMessage(content, Array.from(files), msg.id);
                             ta.value = '';
                             fileInput.value = '';
                             replyBox.style.display = 'none';
-                            // refresh after reply
                             await renderTopLevel();
+                            replyBox.disabled = false;
                         });
-
-                        return card;
                     }
-
+                    
                     // preview & drag-drop
                     function updatePreview() {
                         globalPreview.innerHTML = '';
@@ -1199,12 +1667,14 @@
 
                     // Send main post (with compressed images)
                     sendBtn.addEventListener('click', async () => {
+                        sendBtn.disabled = true;
                         const content = messageInput.value.trim();
                         await postMessage(content, selectedFiles.length ? selectedFiles : null, null);
                         messageInput.value = '';
                         selectedFiles = [];
                         updatePreview();
                         imageInput.value = '';
+                        sendBtn.disabled = false;;
                     });
 
                     // Load more button
@@ -1213,10 +1683,14 @@
                         renderTopLevel();
                     });
                     openLoginBtn.addEventListener('click', () => {
-                        overlay.classList.add('active');
+                        AuthOverlay.classList.add('active');
                         refreshUser();
                     });
-                    closeModalBtn.addEventListener('click', () => overlay.classList.remove('active'));
+                    closeAuthModalBtn.addEventListener('click', () => {
+                        console.log("Exit");
+                        AuthOverlay.classList.remove('active')
+                    }
+                                                  );
                     loginTab.addEventListener('click', () => {
                         loginTab.classList.add('active');
                         signupTab.classList.remove('active');
@@ -1239,30 +1713,195 @@
                     });
                     loginBtn.addEventListener('click', login);
                     signupBtn.addEventListener('click', signUp);
-                    settingsToggleBtn.addEventListener('click', async () => {
-                        if (!currentUser) return alert('Login first');
-                        await refreshUser();
-                        if (currentProfile) {
-                            settingsDisplayName.value = currentProfile.display_name || '';
-                            avatarPreview.src = currentProfile.image_url || '';
-                        }
-                        settingsOverlay.classList.add('active');
-                    });
-                    closeSettingsBtn.addEventListener('click', () => settingsOverlay.classList.remove('active'));
                     logoutBtnSettings.addEventListener('click', logout);
                     closeEnlarge.addEventListener('click', () => enlargeOverlay.classList.remove('active'));
                     enlargeOverlay.addEventListener('click', (e) => {
                         if (e.target.classList.contains('enlarge-overlay')) enlargeOverlay.classList.remove('active');
                     });
 
+                    function updateExpUI() {
+                        const expFill = document.getElementById('expFillBar');
+                        const levelSpan = document.getElementById('currentLevel');
+                        const expFractionSpan = document.getElementById('expFraction');
+                        if (!expFill) return;
+                        const currentExp = currentProfile.exp;
+                        const level = Math.floor((Math.sqrt(0.08 * currentExp + 1) - 1) / 2);
+                        const maxExp = EXP_PER_LEVEL;
+                        let percent = (currentExp / maxExp) * 100;
+                        percent = Math.min(100, Math.max(0, percent));
+                        expFill.style.width = `${percent}%`;
+                        
+                        expFill.classList.add('animate-pulse');
+                        setTimeout(() => expFill.classList.remove('animate-pulse'), 600);
+                        if (levelSpan) levelSpan.innerText = level;
+                        if (expFractionSpan) expFractionSpan.innerText = `${currentExp} / ${maxExp} XP`;
+                    }
+                    function updateRankUI() {
+                        const rankSpan = document.getElementById('rankValueDisplay');
+                        if (rankSpan) rankSpan.innerText = currentProfile.rank;
+                    }
+                    function updateSillynessUI() {
+                        const sillySpan = document.getElementById('sillynessValue');
+                        if (sillySpan) sillySpan.innerText = currentProfile.sillyness;
+                    }
+                    function updateAvatarUI() {
+                        if (avatarPreview){
+                            avatarPreview.src = currentProfile.image_url;
+                        }
+                        const greetingSpan = document.getElementById('greetingName');
+                        if (greetingSpan) greetingSpan.innerText = currentProfile.display_name;
+                    }
+                    function updateNameUI() {
+                        if (settingsDisplayName){ 
+                            settingsDisplayName.value = currentProfile.display_name;
+                        }
+                        const greetingSpan = document.getElementById('greetingName');
+                        if (greetingSpan) greetingSpan.innerText = currentProfile.display_name;
+                    }
+                    function applyBackgroundFromUrl(url) {
+                        if (!url || url.trim() === "") return;
+                        let finalUrl = url.trim();
+                        document.body.style.backgroundImage = `url('${finalUrl}')`;
+                        document.body.style.backgroundSize = "cover";
+                        document.body.style.backgroundAttachment = "fixed";
+                        document.body.style.backgroundPosition = "center";
+                        currentProfile.bgUrl = finalUrl;
+                        
+                    }
+                    function addExp(amount) {
+                        let newExp = currentProfile.exp + amount;
+                        let newLevel = currentProfile.level;
+                        while (newExp >= EXP_PER_LEVEL) {
+                            newExp -= EXP_PER_LEVEL;
+                            newLevel++;
+                        }
+                        if (newExp < 0) newExp = 0;
+                        currentProfile.exp = newExp;
+                        currentProfile.level = newLevel;
+                        updateExpUI();
+                        
+                    }
+                    function addSillyness(inc = 1) {
+                        currentProfile.sillyness += inc;
+                        updateSillynessUI();
+                        
+                    }
+                    function LoadProfile() {
+                        currentProfile.sillyness = 0;
+                        if (!currentUser) return alert('Login first');
+                        if (currentProfile.bgUrl) {
+                            document.body.style.backgroundImage = `url('${currentProfile.bgUrl}')`;
+                            document.body.style.backgroundSize = "cover";
+                            document.body.style.backgroundAttachment = "fixed";
+                            document.body.style.backgroundPosition = "center";
+                        }
+                        updateNameUI();
+                        updateAvatarUI();
+                        updateExpUI();
+                        updateRankUI();
+                        updateSillynessUI();
+                        // populate bg url input
+                        const bgInput = document.getElementById('bgImageUrl');
+                        if (bgInput && currentProfile.bgUrl && currentProfile.bgUrl !== "anime-moon-landscape.jpg") {
+                            bgInput.value = currentProfile.bgUrl;
+                        }
+                    } 
+                    function openModal() {
+                        settingsDisplayName.value = currentProfile.display_name;
+                        const bgUrlInput = document.getElementById('bgImageUrl');
+                        if (bgUrlInput) bgUrlInput.value = (currentProfile.bgUrl && currentProfile.bgUrl !== "anime-moon-landscape.jpg") ? currentProfile.bgUrl : "";
+                        settingsOverlay.classList.add('active');
+                    }
+                    function closeModal() {
+                        AuthOverlay.classList.remove('active');
+                        settingsOverlay.classList.remove('active');
+                    }
+                    
+                    openButton.addEventListener('click', async () => {
+                        if (!currentUser) return alert('Login first');
+                        await refreshUser();
+                        if (currentProfile) {
+                            LoadProfile();
+                        }
+                        openModal();
+                    });
+                    if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+                    settingsOverlay.addEventListener('click', (e) => { if(e.target === settingsOverlay) closeModal(); });
+                    
+                    saveSettingsBtn.addEventListener('click', async () => {
+                        if (!currentUser) return alert('login first');
+                        saveSettingsBtn.disabled = true;
+                        const newName = settingsDisplayName.value.trim();
+                        const file = hiddenFileInput.files[0];
+                        let imageUrl = currentProfile.image_url ? currentProfile.image_url : "";
+                        if (file) {
+                            imageUrl = await CompressProfileImages(file);
+                        }
+                        const updates = {};
+                        if (newName) updates.display_name = newName;
+                        if (imageUrl) updates.image_url = imageUrl;
+                        if (Object.keys(updates).length === 0) return;
+                        const {error} = await server.from('user_profile').update(updates).eq('id', currentUser.id);
+                        if (error) {
+                            alert(error.message);
+                            saveSettingsBtn.disabled = false;
+                        }
+                        else {                    
+                            updateAvatarUI();
+                            addExp(5);
+                            addSillyness(1);
+                            closeModal();
+                            refreshUser();
+                            alert("✨ Profile updated! +5 XP & +1 Sillyness ✨");
+                            saveSettingsBtn.disabled = false;
+                        }
+                    });
+                    logoutBtn.addEventListener('click', () => logout(ss));
 
+                    avatarZone.addEventListener('click', () => {
+                        hiddenFileInput.click();
+                    });
+                    hiddenFileInput.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                                avatarPreview.src = ev.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+
+                    const applyBgBtn = document.getElementById('applyBgBtn');
+                    const bgUrlInput = document.getElementById('bgImageUrl');
+                    applyBgBtn.addEventListener('click', () => {
+                        let url = bgUrlInput.value.trim();
+                        if (url) {
+                            applyBackgroundFromUrl(url);
+                            alert("Background updated!");
+                        } else {
+                            alert("Please enter a valid image URL");
+                        }
+                    });
+
+                    const sillyBlock = document.querySelector('.sillyness-block');
+                    if (sillyBlock) {
+                        sillyBlock.style.cursor = "pointer";
+                        sillyBlock.addEventListener('click', () => {
+                            addSillyness(2);
+                            addExp(3);
+                            updateExpUI();
+                        });
+                        sillyBlock.title = "Click to gain +2 Sillyness & +3 XP!";
+                    }
+                    
                     // Initialize
                     refreshUser().then(() => {
                         renderTopLevel();
                     });
                     loadMessages();
                 })();
-
+                
             </script>
         </body>
 
