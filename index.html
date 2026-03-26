@@ -1312,16 +1312,13 @@
                                             success: resolve,
                                             error: reject,
                                         });
-                                        if(reject){
-                                            throw new Error("Image Compression Failed! If this repeats. Message Rinrin.")
-                                        }
                                     });
                                 }
                                 const path = `image/${userId}/${messageId}/${Date.now()}-${Math.random().toString(36).substring(2)}`;
                                 
-                                const formData = new FormData()
-                                formData.append('file', file)
-                                formData.append('path', path)
+                                const formData = new FormData();
+                                formData.append('file', resolve);
+                                formData.append('path', path);
                                 const { data: pub, error: uploadErr } = await server.functions.invoke('upload-images', { body: formData })
                                 if (!uploadErr) {
                                     uploadedUrls.push(pub.publicUrl);
@@ -1354,17 +1351,14 @@
                                         success: resolve,
                                         error: reject,
                                     });
-                                    if(reject){
-                                        throw new Error("Image Compression Failed! If this repeats. Message Rinrin.")
-                                    }
                                 });
                             }
                             
                             const path = `avatars/${currentUser.id}/${Date.now()}`;
-                            const formData = new FormData()
-                            formData.append('file', image)
-                            formData.append('path', path)
-                            const { data, error: uploadErr } = await server.functions.invoke('upload-images', { body: formData })
+                            const formData = new FormData();
+                            formData.append('file', resolve);
+                            formData.append('path', path);
+                            const { data, error: uploadErr } = await server.functions.invoke('upload-images', { body: formData });
 
                             if (!uploadErr){
                                 pubUrl = data.publicUrl;
