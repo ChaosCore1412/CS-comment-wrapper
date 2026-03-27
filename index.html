@@ -1054,7 +1054,7 @@
                             <div class="settings-right">
                                 <!-- Big profile image with hover upload -->
                                 <div class="avatar-huge-container" id="avatarClickZone">
-                                    <img id="avatarPreviewBig" class="profile-preview-big" src="https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg" alt="avatar">
+                                    <img id="avatarPreviewBig" class="profile-preview-big" src="https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg" alt="avatar" loading="lazy">
                                     <div class="avatar-overlay-icon">
                                     <i class="fas fa-camera"></i>
                                     </div>
@@ -1076,7 +1076,7 @@
                         </div>
                     </div>
             </div>
-                <div class="enlarge-overlay" id="enlargeOverlay"><span class="close-enlarge" id="closeEnlarge">&times;</span><img class="enlarged-img" id="enlargedImg" src="" alt=""></div>
+            <div class="enlarge-overlay" id="enlargeOverlay"><span class="close-enlarge" id="closeEnlarge">&times;</span><img class="enlarged-img" id="enlargedImg" src="" alt="" loading="lazy"></div>
 
             <!-- MAIN FORUM -->
             <div class="forum-container">
@@ -1114,7 +1114,7 @@
                           <button class="send-main-btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Post comment</button>
                     </div>
                 </div>
-                <div class="thread-list" id="chat"></div>
+                    <div class="thread-list" id="chat"></div>
                 <div class="load-more-btn" id="loadMoreContainer" style="display: none;"><button id="loadMoreBtn"><i class="fas fa-chevron-down"></i> Show more posts</button></div>
 
                 <div class="forum-footer"><span><i class="far fa-comment-dots"></i> Made By Rinrin</span><span class="live-badge"><span class="live-dot"></span> live</span></div>
@@ -1288,6 +1288,12 @@
                         return DOMPurify.sanitize(html, {
                             ALLOWED_TAGS: ['b', 'i', 'span', 'a', 'div', 'iframe', 'br', 'img'],
                             ALLOWED_ATTR: ['style', 'href', 'target', 'rel', 'src', 'allowfullscreen', 'class']
+                        });
+                    }
+                    function SanitizeText(text){
+                        return DOMPurify.sanitize(text, {
+                            ALLOWED_TAGS: ['b', 'i', 'span', 'a', 'div', 'br'],
+                            ALLOWED_ATTR: ['style', 'href', 'target', 'rel', 'src', 'class']
                         });
                     }
 
@@ -1480,7 +1486,7 @@
                         if (isReply && msg.parent_id) {
                             const parentMsg = allMessages.find(m => m.id == msg.parent_id);
                             if (parentMsg && parentMsg.user_profile) {
-                                const parentName = parentMsg.user_profile.display_name || 'member';
+                                const parentName = SanitizeText(parentMsg.user_profile.display_name) || 'member';
                                 parentAuthorHtml = `<span class="reply-to-badge"><i class="fas fa-reply"></i> ${parentName}</span>`;
                             }
                         }
@@ -1488,7 +1494,7 @@
                         card.innerHTML = `
                             <div class="comment-header">
                                 <div class="comment-avatar"><img src="${profile.image_url}" alt="" loading="lazy"></div>
-                                <span class="comment-author">${profile.display_name}</span>
+                                <span class="comment-author">${SanitizeText(profile.display_name)}</span>
                                 ${parentAuthorHtml}
                             ${profile.title ? `<span class="comment-id-badge">${profile.title} </span>` : ""}
                                 <span class="comment-time"><i class="far fa-clock"></i> ${timeHtml}</span>
@@ -1743,10 +1749,10 @@
                     }
                     function updateNameUI() {
                         if (settingsDisplayName){ 
-                            settingsDisplayName.value = currentProfile.display_name;
+                            settingsDisplayName.value = SanitizeText(currentProfile.display_name);
                         }
                         const greetingSpan = document.getElementById('greetingName');
-                        if (greetingSpan) greetingSpan.innerText = currentProfile.display_name;
+                        if (greetingSpan) greetingSpan.innerText = SanitizeText(currentProfile.display_name);
                     }
                     function applyBackgroundFromUrl(url) {
                         if (!url || url.trim() === "") return;
@@ -1797,7 +1803,7 @@
                         }
                     } 
                     function openModal() {
-                        settingsDisplayName.value = currentProfile.display_name;
+                        settingsDisplayName.value = SanitizeText(currentProfile.display_name);
                         const bgUrlInput = document.getElementById('bgImageUrl');
                         if (bgUrlInput) bgUrlInput.value = (currentProfile.bgUrl && currentProfile.bgUrl !== "anime-moon-landscape.jpg") ? currentProfile.bgUrl : "";
                         settingsOverlay.classList.add('active');
@@ -1821,7 +1827,7 @@
                     saveSettingsBtn.addEventListener('click', async () => {
                         if (!currentUser) return alert('login first');
                         saveSettingsBtn.disabled = true;
-                        const newName = settingsDisplayName.value.trim();
+                        const newName = SanitizeText(settingsDisplayName.value.trim());
                         const file = hiddenFileInput.files[0];
                         let imageUrl = currentProfile.image_url ? currentProfile.image_url : "";
                         if (file) {
