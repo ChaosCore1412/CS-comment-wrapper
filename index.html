@@ -1828,6 +1828,7 @@
                         if (!currentUser) return alert('login first');
                         saveSettingsBtn.disabled = true;
                         const newName = SanitizeText(settingsDisplayName.value.trim());
+                        if(newName.length > 100){return alert("Keep it short. \nTwT - Rinrin");}
                         const file = hiddenFileInput.files[0];
                         let imageUrl = currentProfile.image_url ? currentProfile.image_url : "";
                         if (file) {
