@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <link rel="shortcut icon" href="https://raw.githubusercontent.com/ChaosCore1412/CS-comment-wrapper/refs/heads/main/icons/Buh.png">
+    <title>The Last CS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/compressorjs@1.2.1/dist/compressor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+	<script src="CS.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styling.css"/>
+</head>
+<body>
+
+<!-- Auth overlay -->
+<div class="overlay" id="authOverlay">
+    <div class="auth-modal">
+        <button class="close-modal" id="closeModalBtn">&times;</button>
+        <h3 style="margin-bottom:4px;">Welcome back</h3>
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="loginTab">Log in</button>
+            <button class="auth-tab" id="signupTab">Sign up</button>
+        </div>
+        <div id="loginForm">
+            <div class="form-group"><input type="email" id="login-email" placeholder="Email"></div>
+            <div class="form-group"><input type="password" id="login-password" placeholder="Password"></div>
+            <button class="auth-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Log in</button>
+            <div class="auth-note">No account? <button id="switchToSignup">Sign up</button></div>
+        </div>
+        <div id="signupForm" style="display:none;">
+            <div class="form-group"><input type="email" id="signup-email" placeholder="Email"></div>
+            <div class="form-group"><input type="text" id="signup-displayname" placeholder="Display name"></div>
+            <div class="form-group"><input type="password" id="signup-password" placeholder="Password"></div>
+            <button class="auth-btn" id="signupBtn"><i class="fas fa-user-plus"></i> Sign up</button>
+            <div class="auth-note">Already a member? <button id="switchToLogin">Log in</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings overlay -->
+<div id="settingsOverlay" class="overlay">
+    <div class="settings-modal">
+        <button class="close-modal" id="closeSettingsBtnModal">&times;</button>
+        <h3 style="margin-bottom:18px;display:flex;gap:10px;align-items:center;"><i class="fas fa-cog"></i> Profile settings</h3>
+        <div class="settings-dashboard">
+            <div class="settings-left">
+                <div class="info-group">
+                    <div class="display-row">
+                        <label><i class="fas fa-user-edit"></i> Display name</label>
+                        <input type="text" id="settingsDisplayName" placeholder="Your nickname">
+                    </div>
+                    <div class="rank-static">
+                        <span class="rank-label"><i class="fas fa-medal"></i> Rank</span>
+                        <span class="rank-value" id="rankValueDisplay">User</span>
+                    </div>
+                </div>
+                <div class="bg-link-group">
+                    <label><i class="fas fa-image"></i> Background (URL)</label>
+                    <div class="bg-input-wrapper">
+                        <input type="text" id="bgImageUrl" placeholder="https://example.com/image.jpg">
+                        <button id="applyBgBtn" class="apply-bg-btn"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <small style="color:#6c8fb0;margin-top:7px;display:block;font-size:0.78rem;"><i class="fas fa-link"></i> Changes the page background</small>
+                </div>
+                <div class="exp-section">
+                    <div class="level-text">
+                        <span><i class="fas fa-chart-line"></i> Level <span id="currentLevel">1</span></span>
+                        <span id="expFraction">0 / 100 XP</span>
+                    </div>
+                    <div class="exp-bar-bg"><div class="exp-fill" id="expFillBar"></div></div>
+                    <div class="exp-details"><span>✨ next level: +100 XP</span><span><i class="fas fa-star"></i> rank progress</span></div>
+                </div>
+            </div>
+            <div class="settings-right">
+                <div class="avatar-huge-container" id="avatarClickZone">
+                    <img id="avatarPreviewBig" src="https://img.freepik.com/premium-vector/default-avatar-profile-icon-social-media-user-image-gray-avatar-icon-blank-profile-silhouette-vector-illustration_561158-3407.jpg" alt="avatar" loading="lazy">
+                    <div class="avatar-overlay-icon"><i class="fas fa-camera"></i></div>
+                </div>
+                <input type="file" id="hiddenAvatarInput" accept="image/*" style="display:none;">
+                <div class="sillyness-block" id="sillynessBlock" title="Click for +2 Sillyness & +3 XP!">
+                    <p style="font-size:0.78rem;font-weight:500;color:#7a8fa6;">Sillyness</p>
+                    <div class="sillyness-number" id="sillynessValue">0</div>
+                </div>
+            </div>
+        </div>
+        <button class="settings-btn" id="saveSettingsBtn"><i class="fas fa-save"></i> Update profile</button>
+        <div class="logout-row">
+            <button id="logoutBtnSettings" style="background:none;border:none;color:#b33;cursor:pointer;font-size:0.88rem;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </div>
+</div>
+
+<!-- Enlarge overlay -->
+<div class="enlarge-overlay" id="enlargeOverlay">
+    <span class="close-enlarge" id="closeEnlarge">&times;</span>
+    <img class="enlarged-img" id="enlargedImg" src="" alt="" loading="lazy">
+</div>
+
+<!-- MAIN FORUM -->
+<div class="forum-container">
+    <div class="forum-header">
+        <h2><i class="fas fa-comments" style="color:#2e9afe;"></i> <span style="font-weight:400;">The Last CS</span></h2>
+        <div class="user-container">
+            <div id="greetingContainer"></div>
+            <button id="settingsToggleBtn"><i class="fas fa-sliders-h"></i></button>
+            <button id="openLoginBtn"><i class="far fa-user-circle"></i> Login</button>
+        </div>
+    </div>
+
+    <!-- Main compose box -->
+    <div class="compose-card" id="mainComposeCard">
+        <h3><i class="fas fa-pencil-alt" style="color:#2e9afe;"></i> Start a new discussion</h3>
+        <div class="input-group" id="mainInputGroup">
+            <div id="mainRichPreview" class="rich-preview"></div>
+            <textarea id="messageInput" rows="3" placeholder="Write your comment… (drag &amp; drop images)"></textarea>
+            <div class="compose-toolbar" id="mainToolbar">
+                <button class="toolbar-btn" data-action="bold" data-ta="messageInput"><i class="fas fa-bold"></i></button>
+                <button class="toolbar-btn" data-action="italic" data-ta="messageInput"><i class="fas fa-italic"></i></button>
+                <div class="toolbar-sep"></div>
+                <button class="toolbar-btn" data-action="spoiler" data-ta="messageInput"><i class="fas fa-eye-slash"></i> <span>Spoiler</span></button>
+                <div class="toolbar-sep"></div>
+                <button class="toolbar-btn" data-action="color" data-ta="messageInput">
+                    <span class="color-swatch" id="mainColorSwatch" style="background:#2e9afe;"></span>
+                    <span>Color</span>
+                </button>
+                <input type="color" class="hidden-color" id="mainColorPicker" value="#2e9afe">
+                <div class="toolbar-sep"></div>
+                <button class="toolbar-btn" id="mainPollToggle"><i class="fas fa-poll-h"></i> <span>Poll</span></button>
+            </div>
+        </div>
+        <div class="preview-area" id="globalPreview"></div>
+        <!-- Poll panel -->
+        <div class="poll-panel" id="mainPollPanel">
+            <h4><i class="fas fa-poll-h"></i> Create a Poll</h4>
+            <input type="text" class="poll-question-input" id="mainPollQuestion" placeholder="Ask a question…">
+            <div class="poll-options-list" id="mainPollOptions">
+                <div class="poll-option-row">
+                    <input type="text" class="poll-option-input" placeholder="Option 1">
+                    <button class="poll-remove-opt" title="Remove"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="poll-option-row">
+                    <input type="text" class="poll-option-input" placeholder="Option 2">
+                    <button class="poll-remove-opt" title="Remove"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <button class="poll-add-opt" id="mainAddPollOpt"><i class="fas fa-plus"></i> Add option</button>
+            <div class="poll-footer" style="margin-top:10px;">
+                <div class="poll-toggle-row">
+                    <label class="toggle-switch" id="mainSingleChoiceToggle">
+                        <input type="checkbox" id="mainSingleChoice" checked>
+                        <div class="toggle-track"></div>
+                        <div class="toggle-thumb"></div>
+                    </label>
+                    <span>Single choice only</span>
+                </div>
+            </div>
+        </div>
+        <div class="compose-footer">
+            <div class="compose-footer-left">
+                <label for="imageInput" class="attach-label"><i class="fas fa-image"></i> <span>Image</span></label>
+                <input type="file" id="imageInput" accept="image/*" multiple style="display:none;">
+            </div>
+            <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i> Post</button>
+        </div>
+    </div>
+
+    <div class="thread-list" id="chat"></div>
+    <div class="load-more-btn" id="loadMoreContainer" style="display:none;">
+        <button id="loadMoreBtn"><i class="fas fa-chevron-down"></i> Show more posts</button>
+    </div>
+    <div class="forum-footer">
+        <span><i class="far fa-comment-dots"></i> Made By Rinrin</span>
+        <span><span class="live-dot"></span>live</span>
+    </div>
+</div>
+</body>
+</html>		
