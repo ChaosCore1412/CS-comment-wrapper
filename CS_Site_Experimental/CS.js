@@ -45,17 +45,16 @@ let selectedFiles = [];
 let currentUser = null;
 let currentProfile = null;
 
-// Pages are stored as an ordered array of page-result objects.
-// Each entry: { messages: [...], total: N }
-// allMessages is the flat union across all loaded pages, de-duped by id.
-let allMessages = []; // flat, de-duped, across all loaded pages
-let topLevelMessages = []; // top-level only, sorted newest-first
-let totalTopLevel = 0; // server-reported total count of top-level posts
-let currentOffset = 0; // next offset to request from the server
+let allMessages = [];
+let topLevelMessages = [];
+
+let cursor = null;
+let totalTopLevel = 0;
+let isLoadingMore = false;
+
 const PAGE_SIZE = 20;
 const MAX_SIZE = 10 * 1024 * 1024;
 const EXP_PER_LEVEL = 100;
-let isLoadingMore = false;
 
 // ==================== HELPERS ====================
 function timeAgo(dateStr) {
@@ -113,16 +112,10 @@ function TextFormatting(text) {
 
 // ==================== AUTH ====================
 async function refreshUser() {
-	const {
-		data: {
-			user
-		}
-	} = await server.auth.getUser();
+	const {data: {user}} = await server.auth.getUser();
 	currentUser = user;
 	if (user) {
-		const {
-			data: profile
-		} = await server.from('user_profile').select('*').eq('id', user.id).single();
+		const {data: profile} = await server.from('user_profile').select('*').eq('id', user.id).single();
 		currentProfile = profile;
 		updateGreeting();
 	} else {
@@ -145,8 +138,7 @@ async function signUp() {
 	const password = document.getElementById('signup-password').value;
 	const displayName = document.getElementById('signup-displayname').value;
 	if (!displayName) return alert('Display name required');
-	const {
-		data,
+	const {data,
 		error
 	} = await server.auth.signUp({
 		email,
@@ -181,10 +173,7 @@ async function logout() {
 }
 async function BlockSystem(BlockType, targetUserId) {
 	const {data,error} = await supabase.functions.invoke("manage-blocked-user", {
-		body: {
-			command: BlockType,
-			user_id: targetUserId
-		}
+		body: {command: BlockType, user_id: targetUserId}
 	});
 	if (error) {
 		console.error("Failed to unblock user:", error);
@@ -221,10 +210,7 @@ async function CompressMessageImage(files, userId, messageId) {
 			const fd = new FormData();
 			fd.append('file', img);
 			fd.append('path', path);
-			const {
-				data: pub,
-				error
-			} = await server.functions.invoke('upload-images', {
+			const {data: pub,error} = await server.functions.invoke('upload-images', {
 				body: fd
 			});
 			if (!error) urls.push(pub.publicUrl);
@@ -246,10 +232,7 @@ async function CompressProfileImages(file) {
 		const fd = new FormData();
 		fd.append('file', img);
 		fd.append('path', path);
-		const {
-			data,
-			error
-		} = await server.functions.invoke('upload-images', {
+		const {data, error} = await server.functions.invoke('upload-images', {
 			body: fd
 		});
 		return error ? '' : data.publicUrl;
@@ -308,10 +291,7 @@ async function postMessage(content, files, parentId = null, pollData = null) {
 	}
 
 	try {
-		const {
-			data: msg,
-			error
-		} = await server.functions.invoke('post-message', {
+		const {data: msg, error} = await server.functions.invoke('post-message', {
 			content: content,
 			parent_id: parentId
 		});
@@ -413,11 +393,9 @@ async function editMessage(messageId, oldContent) {
 		freshBtn.disabled = true;
 		freshBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
 
-		const {
-			error
-		} = await server.from('messages').update({
+		const {error} = await server.from('messages').update({
 			content: newText
-		}).eq('id', messageId);
+        }).eq('id', messageId);
 		if (error) {
 			alert(error.message);
 			freshBtn.disabled = false;
@@ -427,12 +405,10 @@ async function editMessage(messageId, oldContent) {
 
 		closeEditMode();
 		await fullReload();
-		// fullReload() rebuilds the DOM — the old card/button no longer exist, which is fine.
 	});
 
-	// Cancel on Escape
 	const onKey = (e) => {
-		if (e.key === 'Escape') closeEditMode();
+		if (e.key === 'Escape'){closeEditMode()};
 	};
 	document.addEventListener('keydown', onKey);
 }
@@ -465,11 +441,9 @@ async function castVote(pollId, pollData, singleChoice, optionIndex) {
 }
 
 // ==================== PAGINATION / LOAD ====================
-// Call the edge function with explicit offset + limit.
-// Returns { messages, total } or null on error.
-async function fetchPage(offset, limit = PAGE_SIZE) {
+async function fetchMessages(before = 10, limit = PAGE_SIZE) {
 	const {data,error} = await server.functions.invoke('fetch-compressedv2', {
-		body: {offset, limit},
+		body: {before, limit}
 	});
 	if (error) {
 		console.error('Data Fetch Error:', error);
@@ -478,55 +452,58 @@ async function fetchPage(offset, limit = PAGE_SIZE) {
 	return data;
 }
 
-function mergeMessages(incoming) {
-	const existingIds = new Set(allMessages.map(m => m.id));
-	for (const m of incoming) {
-		if (!existingIds.has(m.id)) {
-			allMessages.push(m);
-			existingIds.add(m.id);
-		}
-	}
+function addMessages(messages) {
+    const existingIds = new Set(allMessages.map(m => m.id));
+    for (const message of messages) {
+        if (!existingIds.has(message.id)) {
+            allMessages.push(message);
+            existingIds.add(message.id);
+        }
+    }
 }
-
-// Rebuild topLevelMessages from whatever is in allMessages. shitty hh code		
+	
 function buildTree() {
-	const map = {};
-	allMessages.forEach(m => {
-		m.children = [];
-		map[m.id] = m;
-	});
-	allMessages.forEach(m => {
-		if (m.parent_id && map[m.parent_id]) map[m.parent_id].children.push(m);
-	});
-	topLevelMessages = allMessages
-		.filter(m => !m.parent_id)
-		.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    const messageMap = {};
+
+    for (const message of allMessages) {
+        message.children = [];
+        messageMap[message.id] = message;
+    }
+
+    for (const message of allMessages) {
+        if (message.parent_id && messageMap[message.parent_id]) {
+            messageMap[message.parent_id].children.push(message);
+        }
+    }
+
+    topLevelMessages = allMessages
+        .filter(message => !message.parent_id)
+        .sort((a, b) =>
+            new Date(b.created_at) - new Date(a.created_at)
+        );
 }
 
-// First load: fetch page 0 and render.
 async function loadInitial() {
-	allMessages = [];
-	topLevelMessages = [];
-	currentOffset = 0;
-	totalTopLevel = 0;
-	chatDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#8a9ab0;"><i class="fas fa-spinner fa-pulse"></i> Loading…</div>';
+    allMessages = [];
+    topLevelMessages = [];
+    cursor = null;
+    totalTopLevel = 0;
 
-	const result = await fetchPage(0);
-	if (!result) {
-		chatDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#c0392b;">Failed to load posts.</div>';
-		return;
-	}
+    const result = await fetchMessages();
 
-	mergeMessages(result.messages);
-	totalTopLevel = result.total;		
-	currentOffset = PAGE_SIZE; // next fetch starts here
-	buildTree();
-	renderTopLevel();
+    if (!result) {
+        showLoadError();
+        return;
+    }
 
+    addMessages(result.messages);
+
+    cursor = result.nextCursor;
+
+    buildTree();
+    renderTopLevel();
 }
 
-// Reload from scratch (used after post / edit / delete / vote).
-// Re-fetches every page that was previously loaded so counts stay correct.
 async function fullReload() {
 	const pagesLoaded = Math.ceil(currentOffset / PAGE_SIZE) || 1;
 	allMessages = [];
@@ -542,71 +519,82 @@ async function fullReload() {
 	renderTopLevel();
 }
 
-// Append the next page of top-level posts (and their replies).
+async function setLoadMoreButton(state) { 
+    const button = document.getElementById('loadMoreBtn'); 
+    if (state) { 
+        button.disabled = true; 
+        button.innerHTML = ` <i class="fas fa-spinner fa-pulse"></i> Loading… `; 
+    }else{
+        button.disabled = false; 
+        button.innerHTML = ` <i class="fas fa-chevron-down"></i> Show more posts `; 
+    }
+}
+
 async function loadMore() {
-	if (isLoadingMore) return;
-	isLoadingMore = true;
-	const btn = document.getElementById('loadMoreBtn');
-	if (btn) {
-		btn.disabled = true;
-		btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Loading…';
-	}
+    if (isLoadingMore || !cursor) {return;}
+    
+    isLoadingMore = true;
+    setLoadMoreButton(true);
 
-	const result = await fetchPage(currentOffset);
-	if (result) {
-		mergeMessages(result.messages);
-		totalTopLevel = result.total;
-		currentOffset += PAGE_SIZE;
-		buildTree();
-		renderTopLevel();
-	}
+    const result = await fetchMessages(cursor);
+    if (result) {
+        addMessages(result.messages);
+        cursor = result.nextCursor;
+        buildTree();
+        renderTopLevel();
+    }
 
-	if (btn) {
-		btn.disabled = false;
-		btn.innerHTML = '<i class="fas fa-chevron-down"></i> Show more posts';
-	}
-	isLoadingMore = false;
+    setLoadMoreButton(false);
+    isLoadingMore = false;
 }
 
 function renderTopLevel() {
-	chatDiv.innerHTML = '';
+    chatDiv.innerHTML = '';
 
-	if (!topLevelMessages.length) {
-		chatDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#8a9ab0;">No discussions yet. Be the first!</div>';
-	} else {
-		topLevelMessages.forEach(msg => {
-			chatDiv.appendChild(createMessageElement(msg, false));
-			if (msg.children.length) {
-				const replyDiv = document.createElement('div');
-				replyDiv.className = 'replies-section';
-				chatDiv.appendChild(replyDiv);
-				renderReplies(msg.children, replyDiv, 0);
-			}
-		});
-	}
+    if (topLevelMessages.length === 0) {
+        chatDiv.innerHTML = `
+            <div style="text-align:center;padding:30px;color:#8a9ab0;">
+                No discussions yet. Be the first!
+            </div>
+        `;
+        return;
+    }
 
-	// Show "Load more" if server says there are more top-level posts than we have
-	const lmContainer = document.getElementById('loadMoreContainer');
-	lmContainer.style.display = topLevelMessages.length < totalTopLevel ? 'flex' : 'none';
-	console.log(allMessages);
+    for (const message of topLevelMessages) {
+        chatDiv.appendChild(
+            createMessageElement(message, false)
+        );
+
+        if (message.children.length > 0) {
+            const replies = document.createElement('div');
+            replies.className = 'replies-section';
+
+            chatDiv.appendChild(replies);
+
+            renderReplies(message.children, replies, 0);
+        }
+    }
 }
 
-function renderReplies(children, container, depth) {
-	children
-		.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-		.forEach(r => {
-			container.appendChild(createMessageElement(r, true));
-			if (r.children.length) {
-				if (depth < 1) {
-					const sub = document.createElement('div');
-					sub.className = 'replies-section';
-					container.appendChild(sub);
-					renderReplies(r.children, sub, depth + 1);
-				} else {
-					renderReplies(r.children, container, depth);
-				}
-			}
-		});
+function renderReplies(messages, container, depth) {
+    //Sorting by ascending, add some desc option later ig
+    messages.sort((a, b) =>new Date(a.created_at) - new Date(b.created_at));
+    for (const message of messages) {
+        container.appendChild(createMessageElement(message, true));
+
+        if (message.children.length === 0) {
+            continue;
+        }
+
+        if (depth < 1){
+            const replies = document.createElement('div');
+            replies.className = 'replies-section';
+            container.appendChild(replies);
+            renderReplies(message.children, replies, depth + 1);
+        }else{
+            renderReplies(message.children, container, depth);
+        }
+    }
 }
 
 function createMessageElement(msg, isReply) {
@@ -934,6 +922,7 @@ function applyFormat(ta, action, color) {
 	const end = ta.selectionEnd;
 	let text = ta.value;
 	let before, after;
+    
 	if (action === 'bold') {
 		before = '**';
 		after = '**';
@@ -968,6 +957,7 @@ function applyFormat(ta, action, color) {
 		ta.focus();
 		return;
 	} else return;
+    
 	ta.value = text.slice(0, start) + before + text.slice(start, end) + after + text.slice(end);
 	ta.selectionStart = start + before.length;
 	ta.selectionEnd = end + before.length;
@@ -1029,11 +1019,10 @@ function censorImage(im) {
 	return im, censorBtn;
 }
 
-// ==================== MAIN COMPOSE ====================
+// ==================== Events ====================
 // Rich preview for main input
 messageInput.addEventListener('input', () => updateRichPreview(messageInput, document.getElementById('mainRichPreview')));
 
-// Toolbar buttons (	main)
 document.querySelectorAll('#mainToolbar [data-action]').forEach(btn => {
 	btn.addEventListener('click', () => {
 		const action = btn.dataset.action;
@@ -1273,4 +1262,3 @@ saveSettingsBtn.addEventListener('click', async () => {
 
 // ==================== INIT ====================
 refreshUser().then(() => loadInitial());
-
